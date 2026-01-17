@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Law of Stability - พารวีร์</title>
+    <title>Latest Dominance - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; padding: 20px; transition: 0.5s ease; }
+        
+        /* Scale for Seniors */
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; padding: 15px; transition: opacity 0.3s; }
         .top { transform: rotate(180deg); }
-        .lang-select { position: absolute; top: 10px; right: 10px; background: #222; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 8px; z-index: 100; font-size: 0.9rem; }
+        .lang-select { position: absolute; top: 10px; right: 10px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; z-index: 100; font-size: 1.1rem; }
         
-        /* Message Area */
-        .msg-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .display-text { font-size: 2.5rem; font-weight: 900; color: #fff; text-align: center; word-break: break-word; min-height: 1.2em; margin-bottom: 20px; }
+        /* Message Area - Optimized Scale */
+        .msg-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 60px; }
+        .display-text { font-size: 3rem; font-weight: 900; color: #fff; text-align: center; word-break: break-word; line-height: 1.1; }
         
-        /* Symmetrical Input Bar */
-        .input-group { width: 100%; max-width: 500px; display: flex; gap: 8px; align-items: center; background: #111; padding: 12px; border-radius: 20px; border: 1px solid #333; }
-        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.2rem; padding: 5px; }
-        .mic-btn { font-size: 1.8rem; cursor: pointer; color: #555; transition: 0.3s; padding: 0 10px; }
-        .listening .mic-btn { color: #ff4444; transform: scale(1.2); }
-        .send-btn { background: #fff; color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* Symmetrical Input Bar - Bottom Fixed for each half */
+        .input-group { position: absolute; bottom: 15px; left: 15px; right: 15px; display: flex; gap: 10px; align-items: center; background: #111; padding: 10px; border-radius: 25px; border: 1px solid #333; }
+        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.3rem; padding: 8px; }
+        .mic-btn { font-size: 2.2rem; cursor: pointer; color: #555; padding: 0 10px; }
+        .listening .mic-btn { color: #ff4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        
+        .send-btn { background: #fff; color: #000; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        /* Lock State */
-        .locked { opacity: 0.2; pointer-events: none; filter: grayscale(1); }
-        .beer-icon { position: fixed; bottom: 10px; left: 10px; text-decoration: none; font-size: 1rem; opacity: 0.1; z-index: 1000; }
+        /* Dim state when other side is active */
+        .dimmed { opacity: 0.3; pointer-events: none; filter: grayscale(0.5); }
+        .beer-icon { position: fixed; bottom: 10px; left: 10px; text-decoration: none; font-size: 1.2rem; opacity: 0.1; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -42,11 +46,11 @@
         <select class="lang-select" id="top-lang"><script>document.write(languages)</script></select>
         <div class="msg-container">
             <div class="display-text" id="top-display">READY</div>
-            <div class="input-group">
-                <input type="text" class="chat-input" id="top-input" placeholder="Type..." onfocus="setLock('top')" oninput="sync('top')">
-                <div class="mic-btn" id="top-mic">🎙️</div>
-                <button class="send-btn" id="top-send" onclick="process('top')">➔</button>
-            </div>
+        </div>
+        <div class="input-group">
+            <input type="text" class="chat-input" id="top-input" placeholder="Type..." onfocus="activate('top')" oninput="sync('top')">
+            <div class="mic-btn" id="top-mic">🎙️</div>
+            <button class="send-btn" onclick="process('top')">➔</button>
         </div>
     </div>
 
@@ -56,11 +60,11 @@
         <select class="lang-select" id="bottom-lang"><script>document.write(languages)</script></select>
         <div class="msg-container">
             <div class="display-text" id="bottom-display">พร้อม</div>
-            <div class="input-group">
-                <input type="text" class="chat-input" id="bottom-input" placeholder="พิมพ์ตรงนี้..." onfocus="setLock('bottom')" oninput="sync('bottom')">
-                <div class="mic-btn" id="bottom-mic">🎙️</div>
-                <button class="send-btn" id="bottom-send" onclick="process('bottom')">➔</button>
-            </div>
+        </div>
+        <div class="input-group">
+            <input type="text" class="chat-input" id="bottom-input" placeholder="พิมพ์..." onfocus="activate('bottom')" oninput="sync('bottom')">
+            <div class="mic-btn" id="bottom-mic">🎙️</div>
+            <button class="send-btn" onclick="process('bottom')">➔</button>
         </div>
     </div>
 
@@ -68,16 +72,26 @@
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.continuous = true; recognition.interimResults = true;
         const synth = window.speechSynthesis;
-        let activeSide = "", isGlobalLocked = false;
+        let activeSide = "";
+
+        function activate(side) {
+            if (activeSide !== side) {
+                synth.cancel(); // ตัดเสียงเก่าทันที
+                recognition.stop();
+                activeSide = side;
+                document.querySelectorAll('.half').forEach(h => h.classList.remove('dimmed'));
+                const other = side === 'top' ? 'bottom' : 'top';
+                document.getElementById(other + '-half').classList.add('dimmed');
+            }
+        }
 
         ['top', 'bottom'].forEach(side => {
             const mic = document.getElementById(side + '-mic');
             const start = (e) => { 
-                if(isGlobalLocked && activeSide !== side) return;
-                e.preventDefault(); setLock(side);
+                e.preventDefault(); activate(side);
                 recognition.lang = document.getElementById(side + '-lang').value; 
                 document.getElementById(side + '-half').classList.add('listening'); 
-                synth.cancel(); recognition.start(); 
+                try { recognition.start(); } catch(e) {}
             };
             const end = (e) => { 
                 e.preventDefault(); recognition.stop(); 
@@ -88,18 +102,6 @@
             mic.addEventListener('mouseup', end);
             mic.addEventListener('touchend', end);
         });
-
-        function setLock(side) {
-            if(isGlobalLocked && activeSide === side) return;
-            isGlobalLocked = true; activeSide = side;
-            const other = side === 'top' ? 'bottom' : 'top';
-            document.getElementById(other + '-half').classList.add('locked');
-        }
-
-        function releaseLock() {
-            isGlobalLocked = false; activeSide = "";
-            document.querySelectorAll('.half').forEach(h => h.classList.remove('locked'));
-        }
 
         function sync(side) { 
             const val = document.getElementById(side + '-input').value;
@@ -115,7 +117,7 @@
 
         async function process(side) {
             const text = document.getElementById(side + '-input').value;
-            if (!text) { releaseLock(); return; }
+            if (!text) return;
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
             
@@ -124,23 +126,21 @@
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
+                
                 document.getElementById(other + '-display').innerText = result;
-                document.getElementById(side + '-display').innerText = "DONE";
+                document.getElementById(side + '-display').innerText = "OK";
                 
                 const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.7;
-                utter.onend = () => { 
-                    setTimeout(() => {
-                        document.getElementById(side + '-input').value = "";
-                        sync(side);
-                        releaseLock(); 
-                    }, 1000);
-                };
                 synth.speak(utter);
-            } catch (e) { 
-                document.getElementById(side + '-display').innerText = "ERR"; 
-                releaseLock();
-            }
+                
+                // คืนค่าพร้อมใช้งานใหม่
+                setTimeout(() => { 
+                    document.getElementById(side + '-input').value = "";
+                    document.querySelectorAll('.half').forEach(h => h.classList.remove('dimmed'));
+                    activeSide = "";
+                }, 3000);
+            } catch (e) { document.getElementById(side + '-display').innerText = "ERR"; }
         }
     </script>
 </body>
