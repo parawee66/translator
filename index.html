@@ -3,173 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The 3-Step - พารวีร์</title>
+    <title>The Translator - Pure Equality</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
         .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; }
-        .top { transform: rotate(180deg); background: #000; }
-        .bottom { background: #000; }
-
-        .lang-select {
-            position: absolute; top: 15px; right: 15px; background: #222; color: #fff;
-            border: 2px solid #444; padding: 10px; font-size: 1.2rem; border-radius: 8px; z-index: 10;
-        }
-
-        .display-area { 
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; padding: 20px;
-            line-height: 1.2; word-break: break-word; position: relative;
-        }
-
-        /* Status Indicator: จุดแดงกระพริบ */
-        .status-dot { display: none; font-size: 1.5rem; color: #ff4444; margin-bottom: 10px; }
-        .listening .status-dot { display: block; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-
-        .send-btn { 
-            display: none; width: 100%; height: 45%; background: #fff; color: #000; 
-            border: none; font-size: 4rem; font-weight: 900; cursor: pointer;
-        }
-
-        .label { position: absolute; top: 15px; left: 15px; color: #555; font-size: 0.9rem; letter-spacing: 2px; }
-
-        /* ไอคอนค่าเบียร์มุมซ้ายล่างจางๆ */
-        .beer-bottom-left {
-            position: fixed; bottom: 10px; left: 10px; z-index: 100;
-            text-decoration: none; opacity: 0.2; font-size: 1.5rem; transition: 0.3s;
-        }
-        .beer-bottom-left:hover { opacity: 0.8; }
+        .top { transform: rotate(180deg); }
+        .lang-select { position: absolute; top: 15px; right: 15px; background: #222; color: #fff; border: 2px solid #444; padding: 10px; font-size: 1.1rem; border-radius: 8px; z-index: 100; }
+        .label { position: absolute; top: 15px; left: 15px; color: #444; font-size: 0.8rem; letter-spacing: 3px; font-weight: bold; }
+        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; cursor: pointer; }
+        .text-output { font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; }
+        .status-dot { display: none; align-items: center; color: #ff4444; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+        .listening .status-dot { display: flex; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .send-btn { display: none; width: 100%; height: 45%; background: #fff; color: #000; border: none; font-size: 5rem; font-weight: 900; cursor: pointer; }
+        .beer-icon { position: fixed; bottom: 15px; left: 15px; text-decoration: none; font-size: 1.8rem; opacity: 0.25; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <div class="half top" id="top-half">
-        <div class="label">SNOWBIRD</div>
-        <select class="lang-select" id="top-lang">
+    <script>
+        // กองทัพภาษาที่เท่าเทียมกันทั้งสองฝั่ง
+        const languages = `
+            <option value="th-TH">🇹🇭 ภาษาไทย</option>
             <option value="en-GB">🇬🇧 English</option>
             <option value="no-NO">🇳🇴 Norsk</option>
             <option value="sv-SE">🇸🇪 Svenska</option>
             <option value="da-DK">🇩🇰 Dansk</option>
             <option value="fi-FI">🇫🇮 Suomi</option>
             <option value="de-DE">🇩🇪 Deutsch</option>
+            <option value="fr-FR">🇫🇷 Français</option>
             <option value="ru-RU">🇷🇺 Русский</option>
             <option value="nl-NL">🇳🇱 Nederlands</option>
-            <option value="fr-FR">🇫🇷 Français</option>
-            <option value="th-TH">🇹🇭 ภาษาไทย</option>
-        </select>
-        <div class="display-area" id="top-display-box" onclick="toggleListen('top')">
+        `;
+    </script>
+
+    <div class="half top" id="top-half">
+        <div class="label">SNOWBIRD</div>
+        <select class="lang-select" id="top-lang"><script>document.write(languages)</script></select>
+        <div class="display-area" onclick="handleInteraction('top')">
             <div class="status-dot">● LISTENING</div>
-            <div id="top-display">TAP</div>
+            <div class="text-output" id="top-display">TAP</div>
         </div>
-        <button class="send-btn" id="top-send" onclick="translateAndSend('top')">SEND</button>
+        <button class="send-btn" id="top-send" onclick="processTranslation('top')">SEND</button>
     </div>
 
-    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-bottom-left">🍺</a>
+    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-icon">🍺</a>
 
     <div class="half bottom" id="bottom-half">
         <div class="label">YOU</div>
-        <select class="lang-select" id="bottom-lang">
-            <option value="th-TH">🇹🇭 ภาษาไทย</option>
-            <option value="en-GB">🇬🇧 English</option>
-            <option value="de-DE">🇩🇪 Deutsch</option>
-            <option value="no-NO">🇳🇴 Norsk</option>
-        </select>
-        <div class="display-area" id="bottom-display-box" onclick="toggleListen('bottom')">
+        <select class="lang-select" id="bottom-lang"><script>document.write(languages)</script></select>
+        <div class="display-area" onclick="handleInteraction('bottom')">
             <div class="status-dot">● กำลังฟัง</div>
-            <div id="bottom-display">แตะ</div>
+            <div class="text-output" id="bottom-display">แตะ</div>
         </div>
-        <button class="send-btn" id="bottom-send" onclick="translateAndSend('bottom')">ส่ง</button>
+        <button class="send-btn" id="bottom-send" onclick="processTranslation('bottom')">ส่ง</button>
     </div>
 
     <script>
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true; 
-        recognition.interimResults = true;
-
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true; recognition.interimResults = true;
         const synth = window.speechSynthesis;
-        let lastTranscript = "";
-        let currentSide = "";
-        let isActive = false;
+        let isListening = false, activeSide = "";
 
-        function toggleListen(side) {
-            const box = document.getElementById(side + '-display-box');
-            const display = document.getElementById(side + '-display');
-            const sendBtn = document.getElementById(side + '-send');
-
-            if (isActive) {
-                recognition.stop();
-                isActive = false;
-                box.classList.remove('listening');
-                if(display.innerText === "...") display.innerText = (side === 'top' ? "TAP" : "แตะ");
-                return;
-            }
-
-            currentSide = side;
-            recognition.lang = document.getElementById(side + '-lang').value;
-            
+        function handleInteraction(side) {
+            if (isListening && activeSide === side) { recognition.stop(); isListening = false; return; }
+            activeSide = side; recognition.lang = document.getElementById(side + '-lang').value;
             try { 
-                synth.cancel();
-                recognition.start(); 
-                isActive = true;
-                box.classList.add('listening');
-                display.innerText = "...";
-                sendBtn.style.display = "none";
+                synth.cancel(); recognition.start(); isListening = true; 
+                document.getElementById(side + '-half').classList.add('listening');
+                document.getElementById(side + '-display').innerText = "...";
+                document.getElementById(side + '-send').style.display = "none";
             } catch(e) {}
         }
 
         recognition.onresult = (event) => {
-            const display = document.getElementById(currentSide + '-display');
-            const sendBtn = document.getElementById(currentSide + '-send');
-            let interim = "";
+            const display = document.getElementById(activeSide + '-display'), btn = document.getElementById(activeSide + '-send');
+            let transcript = "";
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                let text = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    lastTranscript = text;
-                    display.innerText = text;
-                    sendBtn.style.display = "block";
-                } else {
-                    interim = text;
-                    display.innerText = interim;
-                }
+                transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) btn.style.display = "block";
             }
+            display.innerText = transcript || "...";
         };
 
-        async function translateAndSend(side) {
-            if (isActive) toggleListen(side);
-
-            const isTop = side === 'top';
-            const otherSide = isTop ? 'bottom' : 'top';
-            const toLangFull = document.getElementById(otherSide + '-lang').value;
-            const toLang = toLangFull.split('-')[0];
-            
-            const displayMe = document.getElementById(side + '-display');
-            const sendBtn = document.getElementById(side + '-send');
-            const displayOther = document.getElementById(otherSide + '-display');
-
-            const textToTranslate = displayMe.innerText;
-            sendBtn.style.display = "none";
-            displayMe.innerText = "WAIT";
-
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${toLang}&dt=t&q=${encodeURI(textToTranslate)}`;
-            
+        async function processTranslation(side) {
+            if (isListening) recognition.stop();
+            const other = side === 'top' ? 'bottom' : 'top';
+            const targetLang = document.getElementById(other + '-lang').value;
+            const myDisplay = document.getElementById(side + '-display'), myBtn = document.getElementById(side + '-send'), otherDisplay = document.getElementById(other + '-display');
+            const text = myDisplay.innerText; myBtn.style.display = "none"; myDisplay.innerText = "WAIT";
             try {
-                const res = await fetch(url);
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
-                const translated = data[0][0][0];
-                
-                displayOther.innerText = translated;
-                displayMe.innerText = "OK";
-                
-                synth.cancel();
-                const utter = new SpeechSynthesisUtterance(translated);
-                utter.lang = toLangFull;
-                utter.rate = 0.8; // หน่วงให้ช้าและเสถียรตามสั่งสัด!
-                synth.speak(utter);
-            } catch (e) { displayMe.innerText = "ERR"; }
+                otherDisplay.innerText = data[0][0][0]; myDisplay.innerText = "OK";
+                synth.cancel(); const utter = new SpeechSynthesisUtterance(data[0][0][0]);
+                utter.lang = targetLang; utter.rate = 0.8; synth.speak(utter);
+            } catch (e) { myDisplay.innerText = "ERR"; }
         }
+
+        recognition.onend = () => { document.querySelectorAll('.half').forEach(h => h.classList.remove('listening')); isListening = false; };
     </script>
 </body>
 </html>
