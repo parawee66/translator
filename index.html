@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pure Buffer - พารวีร์</title>
+    <title>Freedom of Honor - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; padding: 10px; transition: 0.3s; }
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; padding: 10px; }
         .top { transform: rotate(180deg); }
         .lang-select { position: absolute; top: 5px; right: 5px; background: #222; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 5px; z-index: 100; font-size: 0.8rem; }
         
-        /* Display Area */
+        /* Display Area - Scaled for Seniors */
         .display-area { flex: 1; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 10px; margin-bottom: 60px; }
         .text-output { font-size: 2.2rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.2; word-break: break-word; width: 100%; }
         
-        /* Input Bar (The Buffer) */
+        /* The Buffer Bar (Always Ready) */
         .input-bar { position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; gap: 8px; align-items: center; background: #1a1a1a; padding: 6px 12px; border-radius: 30px; border: 1px solid #333; }
-        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.1rem; padding: 10px 0; min-width: 0; }
-        .mic-btn { font-size: 1.6rem; cursor: pointer; color: #666; padding: 5px; transition: 0.2s; }
-        .listening .mic-btn { color: #ff4444; transform: scale(1.2); }
+        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.2rem; padding: 10px 0; min-width: 0; }
+        .mic-btn { font-size: 1.8rem; cursor: pointer; color: #666; padding: 5px; transition: 0.2s; }
+        .listening .mic-btn { color: #ff4444; transform: scale(1.2); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         .send-btn { background: #fff; color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
 
-        .dimmed { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
-        .beer-icon { position: fixed; bottom: 5px; left: 5px; text-decoration: none; font-size: 0.8rem; opacity: 0.2; z-index: 1000; }
+        .beer-icon { position: fixed; bottom: 5px; left: 5px; text-decoration: none; font-size: 0.8rem; opacity: 0.2; z-index: 1000; color: #fff; }
     </style>
 </head>
 <body>
@@ -31,8 +31,7 @@
     <script>
         const langs = [
             {v:'th-TH', t:'🇹🇭 TH'}, {v:'en-GB', t:'🇬🇧 EN'}, {v:'no-NO', t:'🇳🇴 NO'}, 
-            {v:'sv-SE', t:'🇸🇪 SV'}, {v:'de-DE', t:'🇩🇪 DE'}, {v:'fr-FR', t:'🇫🇷 FR'},
-            {v:'ru-RU', t:'🇷🇺 RU'}, {v:'ja-JP', t:'🇯🇵 JP'}, {v:'zh-CN', t:'🇨🇳 ZH'}
+            {v:'sv-SE', t:'🇸🇪 SV'}, {v:'de-DE', t:'🇩🇪 DE'}, {v:'fr-FR', t:'🇫🇷 FR'}
         ];
         const langOpts = langs.map(l => `<option value="${l.v}">${l.t}</option>`).join('');
     </script>
@@ -40,20 +39,20 @@
     <div class="half top" id="top-half">
         <select class="lang-select" id="top-lang"><script>document.write(langOpts)</script></select>
         <div class="display-area"><div class="text-output" id="top-display">READY</div></div>
-        <div class="input-bar" id="top-bar">
-            <input type="text" class="chat-input" id="top-input" placeholder="Type..." onfocus="activate('top')" oninput="sync('top')">
+        <div class="input-bar">
+            <input type="text" class="chat-input" id="top-input" placeholder="Type..." oninput="sync('top')">
             <div class="mic-btn" id="top-mic">🎙️</div>
             <button class="send-btn" onclick="process('top')">➔</button>
         </div>
     </div>
 
-    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-icon">🍺</a>
+    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-icon">🍺 Beer</a>
 
     <div class="half bottom" id="bottom-half">
         <select class="lang-select" id="bottom-lang"><script>document.write(langOpts)</script></select>
         <div class="display-area"><div class="text-output" id="bottom-display">พร้อม</div></div>
-        <div class="input-bar" id="bottom-bar">
-            <input type="text" class="chat-input" id="bottom-input" placeholder="พิมพ์..." onfocus="activate('bottom')" oninput="sync('bottom')">
+        <div class="input-bar">
+            <input type="text" class="chat-input" id="bottom-input" placeholder="พิมพ์ตรงนี้..." oninput="sync('bottom')">
             <div class="mic-btn" id="bottom-mic">🎙️</div>
             <button class="send-btn" onclick="process('bottom')">➔</button>
         </div>
@@ -63,29 +62,26 @@
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.continuous = true; recognition.interimResults = true;
         const synth = window.speechSynthesis;
-        let activeSide = "";
-
-        function activate(side) {
-            if (activeSide !== side) {
-                synth.cancel(); recognition.stop();
-                activeSide = side;
-                document.querySelectorAll('.half').forEach(h => h.classList.remove('dimmed'));
-                document.getElementById((side==='top'?'bottom':'top')+'-half').classList.add('dimmed');
-            }
-        }
+        let activeInput = null;
 
         ['top', 'bottom'].forEach(side => {
             const mic = document.getElementById(side + '-mic');
+            const input = document.getElementById(side + '-input');
+            
             const start = (e) => { 
-                e.preventDefault(); activate(side);
+                e.preventDefault();
+                activeInput = input;
                 recognition.lang = document.getElementById(side + '-lang').value;
-                document.getElementById(side + '-bar').classList.add('listening');
-                try { recognition.start(); } catch(e) {}
+                mic.parentElement.classList.add('listening');
+                synth.cancel();
+                try { recognition.start(); } catch(err) {}
             };
             const end = (e) => { 
-                e.preventDefault(); recognition.stop();
-                document.getElementById(side + '-bar').classList.remove('listening');
+                e.preventDefault();
+                recognition.stop();
+                mic.parentElement.classList.remove('listening');
             };
+            
             mic.addEventListener('mousedown', start); mic.addEventListener('touchstart', start);
             mic.addEventListener('mouseup', end); mic.addEventListener('touchend', end);
         });
@@ -98,31 +94,35 @@
         recognition.onresult = (event) => {
             let res = "";
             for (let i = event.resultIndex; i < event.results.length; ++i) { res += event.results[i][0].transcript; }
-            const input = document.getElementById(activeSide + '-input');
-            input.value = (input.value + " " + res).trim();
-            sync(activeSide);
+            if (activeInput) {
+                activeInput.value = (activeInput.value + " " + res).trim();
+                sync(activeInput.id.split('-')[0]);
+            }
         };
 
         async function process(side) {
-            const text = document.getElementById(side + '-input').value;
+            const input = document.getElementById(side + '-input');
+            const text = input.value;
             if (!text) return;
+            
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
+            
             document.getElementById(side + '-display').innerText = "WAIT...";
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
+                
                 document.getElementById(other + '-display').innerText = result;
                 document.getElementById(side + '-display').innerText = "DONE";
+                
                 const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.7;
-                utter.onend = () => {
-                    document.getElementById(side + '-input').value = "";
-                    document.getElementById(other + '-input').focus();
-                    activate(other);
-                };
                 synth.speak(utter);
+                
+                // ล้าง buffer เฉพาะฝั่งที่ส่ง สั่งสอนมลทิน
+                input.value = "";
             } catch (e) { document.getElementById(side + '-display').innerText = "ERR"; }
         }
     </script>
