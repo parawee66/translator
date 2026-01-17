@@ -3,59 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Stealth Desk - พารวีร์</title>
+    <title>Eternal Universal - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body, html { background: #000; height: 100vh; width: 100vw; overflow: hidden; position: fixed; font-family: sans-serif; color: #fff; }
         .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; min-height: 0; }
         .top { transform: rotate(180deg); }
-        .lang-select { position: absolute; top: 10px; left: 10px; background: rgba(20,20,20,0.9); color: #fff; border: 1px solid #444; font-size: 10px; z-index: 100; }
+        .lang-select { position: absolute; top: 10px; left: 10px; background: rgba(20,20,20,0.95); color: #fff; border: 1px solid #444; font-size: 11px; z-index: 100; border-radius: 4px; padding: 2px; }
         
-        /* สลับหน้าจอระหว่าง ไมค์ กับ คีย์บอร์ด */
-        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .mic-btn { width: 25vw; height: 25vw; max-width: 120px; max-height: 120px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; transition: 0.3s; }
-        .display-box { font-size: 8vw; font-weight: 900; line-height: 1.1; display: none; padding: 15px; text-align: center; }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 10px; }
+        .mic-btn { width: 25vw; height: 25vw; max-width: 110px; max-height: 110px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; transition: 0.3s; z-index: 5; }
+        .display-box { font-size: 8vw; font-weight: 900; line-height: 1.1; display: none; padding: 15px; text-align: center; width: 100%; word-break: break-word; }
         
-        /* Virtual Keyboard (ซ่อนไว้รอเรียก) */
-        .v-kb-container { position: absolute; bottom: -100%; width: 100%; height: 100%; background: #000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; padding: 10px; }
-        .v-kb-container.active { bottom: 0; }
-        .v-kb-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; flex: 1; overflow-y: auto; }
-        .key { background: #222; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 14px; height: 40px; cursor: pointer; color: #ccc; }
-        .key:active { background: #555; }
-        .key.special { background: #333; grid-column: span 2; font-size: 10px; }
+        /* แป้นพิมพ์เจ้าของภาษา (ซ่อน/แสดง) */
+        .kb-container { position: absolute; bottom: -100%; width: 100%; height: 100%; background: #000; transition: 0.3s ease-out; display: flex; flex-direction: column; padding: 10px; z-index: 10; }
+        .kb-container.active { bottom: 0; }
+        .kb-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; flex: 1; overflow-y: auto; padding-bottom: 5px; }
+        .key { background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; height: 38px; cursor: pointer; color: #ccc; }
+        .key:active { background: #555; color: #fff; }
+        .key.special { background: #333; grid-column: span 2; font-size: 10px; font-weight: bold; }
 
-        /* Buffer Area */
-        .buffer-row { height: 12vh; background: #0a0a0a; border-top: 1px solid #1a1a1a; display: flex; align-items: center; gap: 8px; padding: 10px; z-index: 10; }
-        .kb-toggle { font-size: 20px; cursor: pointer; color: #444; flex-shrink: 0; }
-        .kb-toggle.active { color: #fff; }
-        .buffer-box { flex: 1; background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; font-size: 16px; color: #0f0; min-height: 45px; overflow-x: auto; white-space: nowrap; }
-        .send-btn { width: 50px; height: 50px; background: #fff; border-radius: 50%; border: none; font-size: 22px; color: #000; flex-shrink: 0; }
+        /* Buffer Area (โต๊ะสนทนา) */
+        .buffer-row { height: 10vh; background: #0a0a0a; border-top: 1px solid #1a1a1a; display: flex; align-items: center; gap: 10px; padding: 0 15px; flex-shrink: 0; }
+        .kb-toggle { font-size: 24px; cursor: pointer; color: #444; transition: 0.2s; }
+        .kb-toggle.active { color: #0f0; }
+        .buffer-box { flex: 1; background: #000; border: 1px solid #222; border-radius: 8px; padding: 10px; font-size: 16px; color: #0f0; height: 45px; overflow-x: auto; white-space: nowrap; display: flex; align-items: center; }
+        .send-btn { width: 45px; height: 45px; background: #fff; border-radius: 50%; border: none; font-size: 22px; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.2); }
-        .has-msg .mic-btn, .has-msg .v-kb-container { display: none !important; }
+        .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
+        .has-msg .mic-btn, .has-msg .kb-container, .has-msg .kb-toggle { display: none !important; }
         .has-msg .display-box { display: block; }
-        footer { height: 2vh; background: #000; font-size: 8px; color: #222; text-align: center; }
+        footer { height: 2vh; background: #000; font-size: 8px; color: #222; text-align: center; flex-shrink: 0; }
     </style>
 </head>
 <body>
 
     <script>
-        const langData = {
-            'th-TH': { t:'🇹🇭 TH', k:"กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮะาิีึืุูเแโใไ'.ๆ".split("") },
-            'en-US': { t:'🇺🇸 EN', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") },
-            'no-NO': { t:'🇳🇴 NO', k:"QWERTYUIOPÅASDFGHJKLØÆZXCVBNM,.?".split("") },
-            'sv-SE': { t:'🇸🇪 SE', k:"QWERTYUIOPÅASDFGHJKLÖÄZXCVBNM,.?".split("") }
-        };
-    </script>
-
-    <div class="half top" id="top-half">
-        <select class="lang-select" id="top-lang" onchange="initKB('top')"></select>
-        <div class="stage" id="top-stage" onclick="clearMsg('top')">
-            <div class="mic-btn" id="top-mic"><i>🎙️</i><span>HOLD</span></div>
-            <div class="display-box" id="top-display"></div>
-            <div class="v-kb-container" id="top-kb-box">
-                <div class="v-kb-grid" id="top-kb-grid"></div>
-            </div>
-        </div>
-        <div class="buffer-row">
-            <div class="kb-toggle" id="top-kb-btn" onclick="toggleKB('top')
+        // คลังภาษานิรันดร์ (Universal Native Array)
+        const globalLangs = {
+            'th-TH': { n:'🇹🇭 TH', k:"กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮะาิีึืุูเแโใไ'.ๆ".split("") },
+            'en-US': { n:'🇺🇸 EN', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") },
+            'no-NO': { n:'🇳🇴 NO', k:"QWERTYUIOPÅASDFGHJKLØÆZXCVBNM,.?".split("") },
+            'sv-SE': { n:'🇸🇪 SE', k:"QWERTYUIOPÅASDFGHJKLÖÄZXCVBNM,.?".split("") },
+            'de-DE': { n:'🇩🇪 DE', k:"QWERTYUIOPÜASDFGHJKLÖÄZXCVBNMß,.?".split("") },
+            'ja-JP': { n:'🇯🇵 JP', k:"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("") },
+            'zh-CN': { n:'🇨🇳 ZH', k:"ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ".split("") },
+            'ko-KR': { n:'🇰🇷 KR', k:"ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ".split("") },
+            'fr-FR': { n:'🇫🇷 FR', k:"AZERTYUIOPQSDFGHJKLMWXCVBNÉÀÈÇ,.?".split("") },
+            'ru-RU': { n:'🇷🇺 RU', k:"ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТ
