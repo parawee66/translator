@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The 3-Step - พารวีร์</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; }
+        .top { transform: rotate(180deg); background: #000; }
+        .bottom { background: #000; }
+
+        .lang-select {
+            position: absolute; top: 15px; right: 15px; background: #222; color: #fff;
+            border: 2px solid #444; padding: 10px; font-size: 1.2rem; border-radius: 8px; z-index: 10;
+            appearance: none; -webkit-appearance: none;
+        }
+
+        .display-area { 
+            flex: 1; display: flex; align-items: center; justify-content: center; 
+            font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; padding: 20px;
+            line-height: 1.2; word-break: break-word;
+        }
+
+        .send-btn { 
+            display: none; width: 100%; height: 45%; background: #fff; color: #000; 
+            border: none; font-size: 4rem; font-weight: 900; cursor: pointer;
+        }
+
+        .label { position: absolute; top: 15px; left: 15px; color: #555; font-size: 0.9rem; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="half top" id="top-half">
+        <div class="label">SNOWBIRD</div>
+        <select class="lang-select" id="top-lang">
+            <option value="en-GB">🇬🇧 English</option>
+            <option value="no-NO">🇳🇴 Norsk</option>
+            <option value="sv-SE">🇸🇪 Svenska</option>
+            <option value="da-DK">🇩🇰 Dansk</option>
+            <option value="fi-FI">🇫🇮 Suomi</option>
+            <option value="de-DE">🇩🇪 Deutsch</option>
+            <option value="ru-RU">🇷🇺 Русский</option>
+            <option value="nl-NL">🇳🇱 Nederlands</option>
+            <option value="fr-FR">🇫🇷 Français</option>
+            <option value="th-TH">🇹🇭 ภาษาไทย</option>
+        </select>
+        <div class="display-area" id="top-display" onclick="startListen('top')">TAP</div>
+        <button class="send-btn" id="top-send" onclick="translateAndSend('top')">SEND</button>
+    </div>
+
+    <div class="half bottom" id="bottom-half">
+        <div class="label">YOU</div>
+        <select class="lang-select" id="bottom-lang">
+            <option value="th-TH">🇹🇭 ภาษาไทย</option>
+            <option value="en-GB">🇬🇧 English</option>
+            <option value="de-DE">🇩🇪 Deutsch</option>
+            <option value="no-NO">🇳🇴 Norsk</option>
+        </select>
+        <div class="display-area" id="bottom-display" onclick="startListen('bottom')">แตะ</div>
+        <button class="send-btn" id="bottom-send" onclick="translateAndSend('bottom')">ส่ง</button>
+    </div>
+
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        const synth = window.speechSynthesis;
+        let lastTranscript = "";
+        let currentSide = "";
+
+        function startListen(side) {
+            currentSide = side;
+            const lang = document.getElementById(side + '-lang').value;
+            const display = document.getElementById(side + '-display');
+            const sendBtn = document.getElementById(side + '-send');
+            
+            recognition.lang = lang;
+            try { 
+                synth.cancel();
+                recognition.start(); 
+            } catch(e) {}
+
+            display.innerText = "...";
+            sendBtn.style.display = "none";
+        }
+
+        recognition.onresult = (event) => {
+            const display = document.getElementById(currentSide + '-display');
+            const sendBtn = document.getElementById(currentSide + '-send');
+            
+            lastTranscript = event.results[0][0].transcript;
+            display.innerText = lastTranscript;
+            sendBtn.style.display = "block";
+        };
+
+        async function translateAndSend(side) {
+            const isTop = side === 'top';
+            const otherSide = isTop ? 'bottom' : 'top';
+            const toLangFull = document.getElementById(otherSide + '-lang').value;
+            const toLang = toLangFull.split('-')[0];
+            
+            const displayMe = document.getElementById(side + '-display');
+            const sendBtn = document.getElementById(side + '-send');
+            const displayOther = document.getElementById(otherSide + '-display');
+
+            sendBtn.style.display = "none";
+            displayMe.innerText = "WAIT";
+
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${toLang}&dt=t&q=${encodeURI(lastTranscript)}`;
+            
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const translated = data[0][0][0];
+                
+                displayOther.innerText = translated;
+                displayMe.innerText = "OK";
+                
+                const utter = new SpeechSynthesisUtterance(translated);
+                utter.lang = toLangFull;
+                utter.rate = 0.9;
+                synth.speak(utter);
+            } catch (e) { displayMe.innerText = "ERR"; }
+        }
+    </script>
+</body>
+</html>
