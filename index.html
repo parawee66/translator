@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Master Flexible Desk - พารวีร์</title>
+    <title>Total Control Master - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body, html { 
@@ -27,7 +27,7 @@
             width: 28vw; height: 28vw; max-width: 110px; max-height: 110px; 
             background: #111; border: 2px solid #333; border-radius: 50%; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            color: #888; transition: 0.3s; z-index: 5; 
+            color: #888; transition: 0.2s; z-index: 5; 
         }
         .mic-btn i { font-size: 32px; margin-bottom: 2px; }
         .mic-btn span { font-size: 10px; font-weight: bold; letter-spacing: 1px; }
@@ -49,19 +49,24 @@
         .key.special { background: #333; grid-column: span 2; font-size: 10px; }
 
         .buffer-row { 
-            height: auto; min-height: 50px; background: #0a0a0a; border-top: 1px solid #1a1a1a; 
+            height: auto; min-height: 60px; background: #0a0a0a; border-top: 1px solid #1a1a1a; 
             display: flex; align-items: center; gap: 8px; padding: 8px 12px; flex-shrink: 0; 
         }
-        .kb-toggle { font-size: 22px; cursor: pointer; color: #444; padding: 5px; }
+        .kb-toggle { font-size: 22px; cursor: pointer; color: #444; padding: 5px; flex-shrink: 0; }
         .kb-toggle.active { color: #0f0; }
         .buffer-box { 
-            flex: 1; background: #000; border: 1px solid #222; border-radius: 6px; 
-            padding: 8px; font-size: 16px; color: #0f0; min-height: 38px;
-            overflow-x: auto; white-space: nowrap; display: flex; align-items: center; 
+            flex: 1; background: #000; border: 1px solid #333; border-radius: 6px; 
+            padding: 10px; font-size: 16px; color: #0f0; min-height: 40px;
+            max-height: 45px; overflow-x: auto; white-space: nowrap; 
+            display: block; line-height: 20px; outline: none;
         }
+        .action-btns { display: flex; flex-direction: column; gap: 2px; }
+        .mini-btn { background: #222; border: 1px solid #444; color: #888; font-size: 9px; padding: 4px; border-radius: 3px; font-weight: bold; text-align: center; }
+        .mini-btn:active { background: #ff4444; color: #fff; }
+        
         .send-btn { 
-            width: 40px; height: 40px; background: #fff; border-radius: 50%; 
-            border: none; font-size: 18px; color: #000; font-weight: bold; flex-shrink: 0;
+            width: 45px; height: 45px; background: #fff; border-radius: 50%; 
+            border: none; font-size: 20px; color: #000; font-weight: bold; flex-shrink: 0;
         }
 
         .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 15px rgba(255,68,68,0.2); }
@@ -73,7 +78,7 @@
             color: #333; text-align: center; border-top: 1px solid #111; 
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .beer-link { color: #444; text-decoration: none; letter-spacing: 1px; }
+        .beer-link { color: #444; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -102,7 +107,11 @@
         </div>
         <div class="buffer-row">
             <div class="kb-toggle" id="top-kb-btn" onclick="toggleKB('top')">⌨️</div>
-            <div class="buffer-box" id="top-buffer"></div>
+            <div class="buffer-box" id="top-buffer" contenteditable="true"></div>
+            <div class="action-btns">
+                <div class="mini-btn" onclick="delChar('top')">DEL</div>
+                <div class="mini-btn" onclick="clearBuf('top')">CLR</div>
+            </div>
             <button class="send-btn" onclick="send('top')">➔</button>
         </div>
     </div>
@@ -116,7 +125,11 @@
         </div>
         <div class="buffer-row">
             <div class="kb-toggle" id="bottom-kb-btn" onclick="toggleKB('bottom')">⌨️</div>
-            <div class="buffer-box" id="bottom-buffer"></div>
+            <div class="buffer-box" id="bottom-buffer" contenteditable="true"></div>
+            <div class="action-btns">
+                <div class="mini-btn" onclick="delChar('bottom')">DEL</div>
+                <div class="mini-btn" onclick="clearBuf('bottom')">CLR</div>
+            </div>
             <button class="send-btn" onclick="send('bottom')">➔</button>
         </div>
     </div>
@@ -125,7 +138,8 @@
 
     <script>
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.continuous = true; recognition.interimResults = true;
+        recognition.continuous = true; 
+        recognition.interimResults = true;
         const synth = window.speechSynthesis;
         let activeSide = null;
 
@@ -138,7 +152,6 @@
             const grid = document.getElementById(side + '-kb-grid');
             grid.innerHTML = data.k.map(c => `<div class="key" onclick="addChar('${side}','${c}')">${c}</div>`).join('');
             grid.innerHTML += `<div class="key special" onclick="addChar('${side}',' ')">SPACE</div>`;
-            grid.innerHTML += `<div class="key special" onclick="delChar('${side}')">DEL</div>`;
             grid.innerHTML += `<div class="key special" onclick="toggleKB('${side}')">DONE</div>`;
         }
 
@@ -147,11 +160,16 @@
             document.getElementById(side + '-kb-btn').classList.toggle('active');
         }
 
-        function addChar(side, c) { document.getElementById(side + '-buffer').innerText += c; }
+        function addChar(side, c) { 
+            const b = document.getElementById(side + '-buffer');
+            b.innerText += c;
+            b.scrollLeft = b.scrollWidth;
+        }
         function delChar(side) { 
             const b = document.getElementById(side + '-buffer');
             b.innerText = b.innerText.slice(0, -1);
         }
+        function clearBuf(side) { document.getElementById(side + '-buffer').innerText = ""; }
 
         ['top', 'bottom'].forEach(side => {
             initKB(side);
@@ -159,12 +177,17 @@
             const onStart = (e) => {
                 if (document.getElementById(side+'-half').classList.contains('has-msg') || 
                     document.getElementById(side+'-kb-box').classList.contains('active')) return;
-                e.preventDefault(); activeSide = side;
+                e.preventDefault(); 
+                activeSide = side;
                 recognition.lang = document.getElementById(side + '-lang').value;
                 document.getElementById(side + '-half').classList.add('listening');
                 try { recognition.start(); } catch(err) {}
             };
-            const onEnd = (e) => { e.preventDefault(); recognition.stop(); document.getElementById(side + '-half').classList.remove('listening'); };
+            const onEnd = (e) => { 
+                e.preventDefault(); 
+                recognition.stop(); 
+                document.getElementById(side + '-half').classList.remove('listening'); 
+            };
             btn.addEventListener('touchstart', onStart, {passive: false});
             btn.addEventListener('touchend', onEnd, {passive: false});
             btn.addEventListener('mousedown', onStart);
@@ -173,13 +196,19 @@
 
         recognition.onresult = (event) => {
             let res = "";
-            for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) res += event.results[i][0].transcript; }
-            if (activeSide) document.getElementById(activeSide + '-buffer').innerText += res;
+            for (let i = event.resultIndex; i < event.results.length; ++i) { 
+                if (event.results[i].isFinal) res += event.results[i][0].transcript; 
+            }
+            if (activeSide && res) {
+                const b = document.getElementById(activeSide + '-buffer');
+                b.innerText += res;
+                b.scrollLeft = b.scrollWidth;
+            }
         };
 
         async function send(side) {
-            const buf = document.getElementById(side + '-buffer');
-            const text = buf.innerText.trim();
+            const b = document.getElementById(side + '-buffer');
+            const text = b.innerText.trim();
             if (!text) return;
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
@@ -192,16 +221,16 @@
                 const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.85;
                 synth.speak(utter);
-                buf.innerText = "";
+                b.innerText = "";
                 document.getElementById(side + '-kb-box').classList.remove('active');
                 document.getElementById(side + '-kb-btn').classList.remove('active');
-            } catch (e) {}
+            } catch (e) { console.error(e); }
         }
 
         function clearMsg(side) {
-            const half = document.getElementById(side + '-half');
-            if (half.classList.contains('has-msg')) {
-                half.classList.remove('has-msg');
+            const h = document.getElementById(side + '-half');
+            if (h.classList.contains('has-msg')) {
+                h.classList.remove('has-msg');
                 document.getElementById(side + '-display').innerText = "";
             }
         }
