@@ -12,7 +12,6 @@
             display: flex; flex-direction: column;
         }
         
-        /* แบ่งครึ่งแบบยืดหยุ่นตามหน้าจอจริง */
         .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; min-height: 0; overflow: hidden; }
         .top { transform: rotate(180deg); }
 
@@ -23,7 +22,6 @@
             border-radius: 4px; padding: 2px;
         }
 
-        /* พื้นที่แสดงผลและไมค์ ยืดหยุ่นตามจอ */
         .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 5%; }
         .mic-btn { 
             width: 28vw; height: 28vw; max-width: 110px; max-height: 110px; 
@@ -31,10 +29,10 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             color: #888; transition: 0.3s; z-index: 5; 
         }
-        .mic-btn i { font-size: 32px; }
+        .mic-btn i { font-size: 32px; margin-bottom: 2px; }
+        .mic-btn span { font-size: 10px; font-weight: bold; letter-spacing: 1px; }
         .display-box { font-size: 8vw; font-weight: 900; line-height: 1.1; display: none; padding: 15px; text-align: center; width: 100%; word-break: break-word; }
 
-        /* แป้นพิมพ์เจ้าของภาษา สไลด์ขึ้นตามความสูงที่มี */
         .kb-container { 
             position: absolute; bottom: -100%; width: 100%; height: 100%; 
             background: #000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -50,7 +48,6 @@
         .key:active { background: #444; color: #fff; }
         .key.special { background: #333; grid-column: span 2; font-size: 10px; }
 
-        /* โต๊ะรับข้อมูล (Buffer) */
         .buffer-row { 
             height: auto; min-height: 50px; background: #0a0a0a; border-top: 1px solid #1a1a1a; 
             display: flex; align-items: center; gap: 8px; padding: 8px 12px; flex-shrink: 0; 
@@ -67,12 +64,10 @@
             border: none; font-size: 18px; color: #000; font-weight: bold; flex-shrink: 0;
         }
 
-        /* เอฟเฟกต์และการซ่อน */
         .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 15px rgba(255,68,68,0.2); }
         .has-msg .mic-btn, .has-msg .kb-container, .has-msg .kb-toggle { display: none !important; }
         .has-msg .display-box { display: block; }
 
-        /* Footer รับบริจาคแบบนิ่งๆ ไม่บังจอ [cite: 2026-01-17] */
         footer { 
             height: 25px; background: #000; font-size: 9px; 
             color: #333; text-align: center; border-top: 1px solid #111; 
@@ -84,7 +79,6 @@
 <body>
 
     <script>
-        // ชุดข้อมูลภาษาหลัก 16 ทิศทาง [cite: 2026-01-17]
         const globalLangs = {
             'th-TH': { n:'🇹🇭 TH', k:"กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮะาิีึืุูเแโใไ'.ๆ".split("") },
             'en-US': { n:'🇺🇸 EN', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") },
@@ -93,16 +87,16 @@
             'de-DE': { n:'🇩🇪 DE', k:"QWERTYUIOPÜASDFGHJKLÖÄZXCVBNMß,.?".split("") },
             'ja-JP': { n:'🇯🇵 JP', k:"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("") },
             'ko-KR': { n:'🇰🇷 KR', k:"ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ".split("") },
+            'zh-CN': { n:'🇨🇳 ZH', k:"ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ".split("") },
             'fr-FR': { n:'🇫🇷 FR', k:"AZERTYUIOPQSDFGHJKLMWXCVBNÉÀÈÇ,.?".split("") },
-            'ru-RU': { n:'🇷🇺 RU', k:"ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,.?".split("") },
-            'ar-SA': { n:'🇸🇦 AR', k:"أبتثجحخدذرزسشصضطظعغفقكلمنهوي".split("") }
+            'ru-RU': { n:'🇷🇺 RU', k:"ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,.?".split("") }
         };
     </script>
 
     <div class="half top" id="top-half">
         <select class="lang-select" id="top-lang" onchange="initKB('top')"></select>
         <div class="stage" id="top-stage" onclick="clearMsg('top')">
-            <div class="mic-btn" id="top-mic"><i>🎙️</i></div>
+            <div class="mic-btn" id="top-mic"><i>🎙️</i><span>HOLD</span></div>
             <div class="display-box" id="top-display"></div>
             <div class="kb-container" id="top-kb-box"><div class="kb-grid" id="top-kb-grid"></div></div>
         </div>
@@ -116,7 +110,7 @@
     <div class="half bottom" id="bottom-half">
         <select class="lang-select" id="bottom-lang" onchange="initKB('bottom')"></select>
         <div class="stage" id="bottom-stage" onclick="clearMsg('bottom')">
-            <div class="mic-btn" id="bottom-mic"><i>🎙️</i></div>
+            <div class="mic-btn" id="bottom-mic"><i>🎙️</i><span>กดค้าง</span></div>
             <div class="display-box" id="bottom-display"></div>
             <div class="kb-container" id="bottom-kb-box"><div class="kb-grid" id="bottom-kb-grid"></div></div>
         </div>
