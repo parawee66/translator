@@ -30,6 +30,18 @@
         }
 
         .label { position: absolute; top: 15px; left: 15px; color: #555; font-size: 0.9rem; letter-spacing: 2px; }
+
+        /* ส่วนของปุ่ม Sponsor */
+        .sponsor-wrap {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(0deg);
+            text-align: center; z-index: 100; width: 100%; pointer-events: none;
+        }
+        .sponsor-btn {
+            display: inline-block; background: #fff; color: #000; padding: 10px 20px;
+            border-radius: 50px; font-weight: 900; text-decoration: none; font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(255,255,255,0.4); pointer-events: auto;
+            border: 3px solid #000;
+        }
     </style>
 </head>
 <body>
@@ -45,11 +57,16 @@
             <option value="de-DE">🇩🇪 Deutsch</option>
             <option value="ru-RU">🇷🇺 Русский</option>
             <option value="nl-NL">🇳🇱 Nederlands</option>
-            <option value="fr-FR">🇫🇷 Français</option>
             <option value="th-TH">🇹🇭 ภาษาไทย</option>
         </select>
         <div class="display-area" id="top-display" onclick="startListen('top')">TAP</div>
         <button class="send-btn" id="top-send" onclick="translateAndSend('top')">SEND</button>
+    </div>
+
+    <div class="sponsor-wrap">
+        <a href="https://github.com/sponsors/parawee66" target="_blank" class="sponsor-btn">
+            🍺 BEER FOR FRIENDSHIP
+        </a>
     </div>
 
     <div class="half bottom" id="bottom-half">
@@ -57,8 +74,8 @@
         <select class="lang-select" id="bottom-lang">
             <option value="th-TH">🇹🇭 ภาษาไทย</option>
             <option value="en-GB">🇬🇧 English</option>
-            <option value="de-DE">🇩🇪 Deutsch</option>
             <option value="no-NO">🇳🇴 Norsk</option>
+            <option value="sv-SE">🇸🇪 Svenska</option>
         </select>
         <div class="display-area" id="bottom-display" onclick="startListen('bottom')">แตะ</div>
         <button class="send-btn" id="bottom-send" onclick="translateAndSend('bottom')">ส่ง</button>
