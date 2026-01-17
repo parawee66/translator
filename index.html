@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Translator - Pure Equality</title>
+    <title>The Translator - Hybrid Edition</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -11,41 +11,52 @@
         .top { transform: rotate(180deg); }
         .lang-select { position: absolute; top: 15px; right: 15px; background: #222; color: #fff; border: 2px solid #444; padding: 10px; font-size: 1.1rem; border-radius: 8px; z-index: 100; }
         .label { position: absolute; top: 15px; left: 15px; color: #444; font-size: 0.8rem; letter-spacing: 3px; font-weight: bold; }
-        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; cursor: pointer; }
-        .text-output { font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; }
-        .status-dot { display: none; align-items: center; color: #ff4444; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+        
+        /* Display & Chat Area */
+        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; cursor: pointer; overflow-y: auto; }
+        .text-output { font-size: 2.8rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; min-height: 1em; }
+        
+        /* Input Box */
+        .chat-box { width: 90%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; font-size: 1.2rem; border-radius: 10px; margin-top: 15px; text-align: center; }
+        
+        .status-dot { display: none; align-items: center; color: #ff4444; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; }
         .listening .status-dot { display: flex; animation: pulse 1.2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .send-btn { display: none; width: 100%; height: 45%; background: #fff; color: #000; border: none; font-size: 5rem; font-weight: 900; cursor: pointer; }
+        
+        /* Buttons */
+        .controls { display: none; width: 100%; height: 40%; flex-direction: row; }
+        .send-btn { flex: 3; background: #fff; color: #000; border: none; font-size: 4rem; font-weight: 900; cursor: pointer; }
+        .clear-btn { flex: 1; background: #333; color: #fff; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; border-left: 1px solid #000; }
+        
         .beer-icon { position: fixed; bottom: 15px; left: 15px; text-decoration: none; font-size: 1.8rem; opacity: 0.25; z-index: 1000; }
     </style>
 </head>
 <body>
 
     <script>
-        // กองทัพภาษาที่เท่าเทียมกันทั้งสองฝั่ง
         const languages = `
             <option value="th-TH">🇹🇭 ภาษาไทย</option>
             <option value="en-GB">🇬🇧 English</option>
             <option value="no-NO">🇳🇴 Norsk</option>
             <option value="sv-SE">🇸🇪 Svenska</option>
-            <option value="da-DK">🇩🇰 Dansk</option>
-            <option value="fi-FI">🇫🇮 Suomi</option>
             <option value="de-DE">🇩🇪 Deutsch</option>
             <option value="fr-FR">🇫🇷 Français</option>
             <option value="ru-RU">🇷🇺 Русский</option>
-            <option value="nl-NL">🇳🇱 Nederlands</option>
         `;
     </script>
 
     <div class="half top" id="top-half">
         <div class="label">SNOWBIRD</div>
         <select class="lang-select" id="top-lang"><script>document.write(languages)</script></select>
-        <div class="display-area" onclick="handleInteraction('top')">
-            <div class="status-dot">● LISTENING</div>
-            <div class="text-output" id="top-display">TAP</div>
+        <div class="display-area">
+            <div class="status-dot">● TALKING...</div>
+            <div class="text-output" id="top-display" onclick="handleInteraction('top')">TAP</div>
+            <input type="text" class="chat-box" id="top-input" placeholder="Type here..." oninput="handleTyping('top')">
         </div>
-        <button class="send-btn" id="top-send" onclick="processTranslation('top')">SEND</button>
+        <div class="controls" id="top-controls">
+            <button class="send-btn" onclick="processTranslation('top')">SEND</button>
+            <button class="clear-btn" onclick="clearText('top')">RESET</button>
+        </div>
     </div>
 
     <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-icon">🍺</a>
@@ -53,51 +64,72 @@
     <div class="half bottom" id="bottom-half">
         <div class="label">YOU</div>
         <select class="lang-select" id="bottom-lang"><script>document.write(languages)</script></select>
-        <div class="display-area" onclick="handleInteraction('bottom')">
-            <div class="status-dot">● กำลังฟัง</div>
-            <div class="text-output" id="bottom-display">แตะ</div>
+        <div class="display-area">
+            <div class="status-dot">● กำลังฟัง...</div>
+            <div class="text-output" id="bottom-display" onclick="handleInteraction('bottom')">แตะ</div>
+            <input type="text" class="chat-box" id="bottom-input" placeholder="พิมพ์ตรงนี้..." oninput="handleTyping('bottom')">
         </div>
-        <button class="send-btn" id="bottom-send" onclick="processTranslation('bottom')">ส่ง</button>
+        <div class="controls" id="bottom-controls">
+            <button class="send-btn" onclick="processTranslation('bottom')">ส่ง</button>
+            <button class="clear-btn" onclick="clearText('bottom')">ล้าง</button>
+        </div>
     </div>
 
     <script>
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.continuous = true; recognition.interimResults = true;
         const synth = window.speechSynthesis;
-        let isListening = false, activeSide = "";
+        let isListening = false, activeSide = "", accumulatedText = "";
 
         function handleInteraction(side) {
-            if (isListening && activeSide === side) { recognition.stop(); isListening = false; return; }
-            activeSide = side; recognition.lang = document.getElementById(side + '-lang').value;
+            const display = document.getElementById(side + '-display');
+            if (isListening && activeSide === side) { recognition.stop(); return; }
+            activeSide = side;
+            accumulatedText = (display.innerText === "TAP" || display.innerText === "แตะ") ? "" : display.innerText;
+            recognition.lang = document.getElementById(side + '-lang').value;
             try { 
                 synth.cancel(); recognition.start(); isListening = true; 
                 document.getElementById(side + '-half').classList.add('listening');
-                document.getElementById(side + '-display').innerText = "...";
-                document.getElementById(side + '-send').style.display = "none";
             } catch(e) {}
         }
 
         recognition.onresult = (event) => {
-            const display = document.getElementById(activeSide + '-display'), btn = document.getElementById(activeSide + '-send');
-            let transcript = "";
+            const display = document.getElementById(activeSide + '-display'), controls = document.getElementById(activeSide + '-controls');
+            let interim = "";
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) btn.style.display = "block";
+                if (event.results[i].isFinal) accumulatedText += (accumulatedText ? " " : "") + event.results[i][0].transcript;
+                else interim = event.results[i][0].transcript;
             }
-            display.innerText = transcript || "...";
+            display.innerText = accumulatedText + (interim ? " " + interim : "");
+            controls.style.display = "flex";
         };
+
+        function handleTyping(side) {
+            const input = document.getElementById(side + '-input'), display = document.getElementById(side + '-display'), controls = document.getElementById(side + '-controls');
+            if (input.value) { display.innerText = input.value; controls.style.display = "flex"; }
+        }
+
+        function clearText(side) {
+            document.getElementById(side + '-display').innerText = (side === 'top' ? "TAP" : "แตะ");
+            document.getElementById(side + '-input').value = "";
+            document.getElementById(side + '-controls').style.display = "none";
+            accumulatedText = "";
+        }
 
         async function processTranslation(side) {
             if (isListening) recognition.stop();
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
-            const myDisplay = document.getElementById(side + '-display'), myBtn = document.getElementById(side + '-send'), otherDisplay = document.getElementById(other + '-display');
-            const text = myDisplay.innerText; myBtn.style.display = "none"; myDisplay.innerText = "WAIT";
+            const myDisplay = document.getElementById(side + '-display'), otherDisplay = document.getElementById(other + '-display'), myControls = document.getElementById(side + '-controls');
+            const text = myDisplay.innerText;
+            myControls.style.display = "none";
+            myDisplay.innerText = "WAIT";
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
-                otherDisplay.innerText = data[0][0][0]; myDisplay.innerText = "OK";
-                synth.cancel(); const utter = new SpeechSynthesisUtterance(data[0][0][0]);
+                const result = data[0][0][0];
+                otherDisplay.innerText = result; myDisplay.innerText = "OK";
+                synth.cancel(); const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.8; synth.speak(utter);
             } catch (e) { myDisplay.innerText = "ERR"; }
         }
