@@ -3,77 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The translator - Master Edition</title>
+    <title>The translator - Stable Edition</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; transition: 0.3s; }
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; }
         .top { transform: rotate(180deg); background: #000; }
         .bottom { background: #000; }
-
         .lang-select {
             position: absolute; top: 15px; right: 15px; background: #222; color: #fff;
             border: 2px solid #444; padding: 10px; font-size: 1.2rem; border-radius: 8px; z-index: 10;
         }
-
         .display-area { 
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            font-size: 3rem; font-weight: 900; color: #fff; text-align: center; padding: 20px;
+            font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; padding: 20px;
             line-height: 1.2; word-break: break-word;
         }
-
-        .history { font-size: 1.2rem; color: #555; margin-bottom: 10px; font-weight: normal; }
-
-        .send-btn { 
-            display: none; width: 100%; height: 40%; background: #fff; color: #000; 
-            border: none; font-size: 4rem; font-weight: 900; cursor: pointer;
-        }
-
+        .history-text { font-size: 1.2rem; color: #444; margin-bottom: 10px; font-weight: normal; }
+        .send-btn { display: none; width: 100%; height: 45%; background: #fff; color: #000; border: none; font-size: 4rem; font-weight: 900; cursor: pointer; }
         .label { position: absolute; top: 15px; left: 15px; color: #555; font-size: 0.9rem; letter-spacing: 2px; }
-
-        .sponsor-container {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 100; pointer-events: none;
-        }
-        .sponsor-link {
-            display: inline-block; background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5);
-            padding: 5px 15px; border-radius: 50px; text-decoration: none; font-size: 0.8rem;
-            pointer-events: auto; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .sponsor-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; }
+        .sponsor-link { display: inline-block; background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.4); padding: 5px 15px; border-radius: 50px; text-decoration: none; font-size: 0.8rem; pointer-events: auto; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body>
-
     <div class="half top" id="top-half">
         <div class="label">SNOWBIRD</div>
         <select class="lang-select" id="top-lang">
             <option value="en-GB">🇬🇧 English</option>
             <option value="no-NO">🇳🇴 Norsk</option>
             <option value="sv-SE">🇸🇪 Svenska</option>
+            <option value="da-DK">🇩🇰 Dansk</option>
+            <option value="fi-FI">🇫🇮 Suomi</option>
+            <option value="de-DE">🇩🇪 Deutsch</option>
+            <option value="ru-RU">🇷🇺 Русский</option>
+            <option value="nl-NL">🇳🇱 Nederlands</option>
+            <option value="fr-FR">🇫🇷 Français</option>
             <option value="th-TH">🇹🇭 ภาษาไทย</option>
         </select>
         <div class="display-area" onclick="startListen('top')">
-            <div class="history" id="top-history"></div>
-            <div id="top-display">TAP TO SPEAK</div>
+            <div class="history-text" id="top-history"></div>
+            <div id="top-display">TAP</div>
         </div>
         <button class="send-btn" id="top-send" onclick="translateAndSend('top')">SEND</button>
     </div>
-
     <div class="sponsor-container">
         <a href="https://github.com/sponsors/parawee66" target="_blank" class="sponsor-link">🍺 Sponsor</a>
     </div>
-
     <div class="half bottom" id="bottom-half">
         <div class="label">YOU</div>
         <select class="lang-select" id="bottom-lang">
             <option value="th-TH">🇹🇭 ภาษาไทย</option>
             <option value="en-GB">🇬🇧 English</option>
+            <option value="de-DE">🇩🇪 Deutsch</option>
             <option value="no-NO">🇳🇴 Norsk</option>
         </select>
         <div class="display-area" onclick="startListen('bottom')">
-            <div class="history" id="bottom-history"></div>
-            <div id="bottom-display">แตะเพื่อพูด</div>
+            <div class="history-text" id="bottom-history"></div>
+            <div id="bottom-display">แตะ</div>
         </div>
         <button class="send-btn" id="bottom-send" onclick="translateAndSend('bottom')">ส่ง</button>
     </div>
@@ -81,11 +68,8 @@
     <script>
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        
-        // แก้ไข 1: รับข้อมูลต่อเนื่อง ไม่ตัดบทไว
         recognition.continuous = false;
         recognition.interimResults = true; 
-
         const synth = window.speechSynthesis;
         let lastTranscript = "";
         let currentSide = "";
@@ -96,18 +80,9 @@
             const display = document.getElementById(side + '-display');
             const history = document.getElementById(side + '-history');
             const sendBtn = document.getElementById(side + '-send');
-            
-            // แก้ไข 2: เก็บประโยคเก่าไว้ดูต่างหน้าก่อนเริ่มใหม่
-            if(display.innerText !== "TAP TO SPEAK" && display.innerText !== "แตะเพื่อพูด") {
-                history.innerText = display.innerText;
-            }
-
+            if(display.innerText !== "TAP" && display.innerText !== "แตะ") history.innerText = display.innerText;
             recognition.lang = lang;
-            try { 
-                synth.cancel();
-                recognition.start(); 
-            } catch(e) {}
-
+            try { synth.cancel(); recognition.start(); } catch(e) {}
             display.innerText = "...";
             sendBtn.style.display = "none";
         }
@@ -116,7 +91,6 @@
             const display = document.getElementById(currentSide + '-display');
             const sendBtn = document.getElementById(currentSide + '-send');
             let interim = "";
-            
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     lastTranscript = event.results[i][0].transcript;
@@ -134,7 +108,6 @@
             const otherSide = isTop ? 'bottom' : 'top';
             const toLangFull = document.getElementById(otherSide + '-lang').value;
             const toLang = toLangFull.split('-')[0];
-            
             const displayMe = document.getElementById(side + '-display');
             const sendBtn = document.getElementById(side + '-send');
             const displayOther = document.getElementById(otherSide + '-display');
@@ -142,27 +115,27 @@
 
             sendBtn.style.display = "none";
             const originalText = displayMe.innerText;
-            displayMe.innerText = "WAITING...";
+            displayMe.innerText = "WAIT";
 
             const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${toLang}&dt=t&q=${encodeURI(originalText)}`;
-            
             try {
                 const res = await fetch(url);
                 const data = await res.json();
                 const translated = data[0][0][0];
-                
-                historyOther.innerText = ""; // ล้างประวัติฝั่งนู้นเพื่อโชว์คำแปลชัดๆ
+                historyOther.innerText = ""; 
                 displayOther.innerText = translated;
-                displayMe.innerText = "DONE";
+                displayMe.innerText = "OK";
                 
-                const utter = new SpeechSynthesisUtterance(translated);
-                utter.lang = toLangFull;
-                
-                // แก้ไข 3: หน่วงความเร็วในการพูดให้ช้าลง (0.8 คือช้าและชัด)
-                utter.rate = 0.8; 
-                utter.pitch = 1;
-                synth.speak(utter);
-            } catch (e) { displayMe.innerText = "ERROR"; }
+                // แก้ความไม่เสถียร: เคลียร์คิวเดิมและตั้งค่าจังหวะเสถียร (0.85)
+                synth.cancel(); 
+                setTimeout(() => {
+                    const utter = new SpeechSynthesisUtterance(translated);
+                    utter.lang = toLangFull;
+                    utter.rate = 0.85; 
+                    utter.pitch = 1.0;
+                    synth.speak(utter);
+                }, 100); 
+            } catch (e) { displayMe.innerText = "ERR"; }
         }
     </script>
 </body>
