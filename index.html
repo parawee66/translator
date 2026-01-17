@@ -3,118 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Universal Pure Desk - พารวีร์</title>
+    <title>Universal Master Demo - พารวีร์</title>
     <style>
+        :root { --bg: #000; --txt: #fff; --buf-bg: #050505; --accent: #0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: none; }
-        body, html { background: #000; height: 100%; width: 100%; overflow: hidden; position: fixed; font-family: sans-serif; color: #fff; }
-        .half { height: 50%; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; }
-        .top { transform: rotate(180deg); }
+        body, html { background: var(--bg); height: 100%; width: 100%; overflow: hidden; position: fixed; font-family: sans-serif; transition: 0.3s; }
         
-        /* สภาพคล่องของการตั้งค่า */
-        .controls { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; z-index: 100; }
-        select { background: #222; color: #fff; border: 1px solid #444; font-size: 12px; border-radius: 4px; padding: 2px; }
-        .mute-btn { background: #222; border: 1px solid #444; color: #888; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
-        .mute-btn.active { color: #ff4444; border-color: #ff4444; }
+        .half { 
+            height: 50%; display: flex; flex-direction: column; position: relative; 
+            border-bottom: 1px solid #333; transition: 0.4s ease;
+            filter: grayscale(1) opacity(0.3); background: var(--bg);
+        }
+        .top { transform: rotate(180deg); }
+        .half.active { filter: grayscale(0) opacity(1); background: var(--bg); }
 
-        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; }
-        .mic-btn { width: 100px; height: 100px; background: #111; border: 3px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; cursor: pointer; transition: 0.2s; }
-        .mic-btn span { font-size: 10px; font-weight: bold; margin-top: 5px; }
-        .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
+        .controls { position: absolute; top: 12px; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; z-index: 100; }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; border-radius: 4px; padding: 3px; }
+        .mute-btn { background: #222; border: 1px solid #444; color: #888; border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+        .mute-btn.on { color: #ff4444; border-color: #ff4444; }
 
-        .display-box { font-size: 8vw; font-weight: 900; line-height: 1.2; text-align: center; width: 100%; max-height: 80%; overflow-y: auto; display: none; padding: 20px; word-break: break-word; }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; overflow: hidden; }
+        .mic-btn { width: 100px; height: 100px; background: #111; border: 3px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; cursor: pointer; transition: 0.3s; }
+        .active .mic-btn { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px rgba(0,255,0,0.1); }
+        
+        .display-box { font-size: 8vw; font-weight: 900; line-height: 1.1; text-align: center; width: 100%; max-height: 100%; overflow-y: auto; display: none; padding: 20px; color: var(--txt); word-break: break-word; }
         .has-msg .mic-btn { display: none; }
         .has-msg .display-box { display: block; }
 
-        .buffer-row { height: 60px; background: #0a0a0a; border-top: 1px solid #222; display: flex; align-items: center; gap: 8px; padding: 0 10px; flex-shrink: 0; }
-        .buffer-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; font-size: 16px; color: #0f0; outline: none; overflow-x: auto; white-space: nowrap; }
-        .btn-sm { background: #222; color: #888; border: 1px solid #444; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .send-btn { width: 45px; height: 45px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: none; font-weight: bold; }
+        .buffer-row { height: 65px; background: var(--buf-bg); border-top: 1px solid #222; display: flex; align-items: center; gap: 8px; padding: 0 12px; flex-shrink: 0; }
+        .buffer-box { flex: 1; background: #000; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 16px; color: var(--accent); outline: none; min-height: 42px; max-height: 42px; overflow-x: auto; white-space: nowrap; }
+        .clr-btn { font-size: 10px; color: #666; font-weight: bold; cursor: pointer; }
+        .send-btn { width: 44px; height: 44px; background: var(--txt); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--bg); font-weight: bold; flex-shrink: 0; border: none; }
+        
+        .status-info { position: absolute; bottom: 70px; width: 100%; text-align: center; font-size: 9px; color: #444; pointer-events: none; }
+        
+        /* ปุ่มเปลี่ยน Theme ซ่อนไว้มุมขวาข้าง status [cite: 2026-01-17] */
+        .theme-btn { position: absolute; bottom: 70px; right: 15px; font-size: 14px; cursor: pointer; opacity: 0.4; z-index: 105; }
     </style>
 </head>
-<body>
+<body onload="init()">
 
-    <div class="half top" id="top-half">
+    <div class="half top active" id="top-half">
         <div class="controls">
             <select id="top-lang"></select>
             <div class="mute-btn" id="top-mute" onclick="toggleMute('top')">🔊</div>
         </div>
-        <div class="stage" onclick="clearMsg('top')">
-            <div class="mic-btn" id="top-mic">🎙️<span>HOLD</span></div>
-            <div class="display-box" id="top-display"></div>
-        </div>
+        <div class="stage" onclick="clearMsg('top')"><div class="mic-btn" onclick="startVoice('top')">🎙️<span>TALK</span></div><div class="display-box" id="top-display"></div></div>
+        <div class="status-info" id="top-status">READY</div>
+        <div class="theme-btn" onclick="cycleTheme()">🎨</div>
         <div class="buffer-row">
-            <div class="buffer-input" id="top-buffer" contenteditable="true"></div>
-            <div class="btn-sm" onclick="clearBuf('top')">CLR</div>
-            <div class="send-btn" onclick="send('top')">➔</div>
+            <div class="buffer-box" id="top-buffer" contenteditable="true"></div>
+            <div class="clr-btn" onclick="clearBuf('top')">CLR</div>
+            <button class="send-btn" onclick="send('top')">➔</button>
         </div>
     </div>
 
-    <div class="half bottom" id="bottom-half">
+    <div class="half bottom active" id="bottom-half">
         <div class="controls">
             <select id="bottom-lang"></select>
             <div class="mute-btn" id="bottom-mute" onclick="toggleMute('bottom')">🔊</div>
         </div>
-        <div class="stage" onclick="clearMsg('bottom')">
-            <div class="mic-btn" id="bottom-mic">🎙️<span>กดค้าง</span></div>
-            <div class="display-box" id="bottom-display"></div>
-        </div>
+        <div class="stage" onclick="clearMsg('bottom')"><div class="mic-btn" onclick="startVoice('bottom')">🎙️<span>พูด</span></div><div class="display-box" id="bottom-display"></div></div>
+        <div class="status-info" id="bottom-status">พร้อม</div>
+        <div class="theme-btn" onclick="cycleTheme()">🎨</div>
         <div class="buffer-row">
-            <div class="buffer-input" id="bottom-buffer" contenteditable="true"></div>
-            <div class="btn-sm" onclick="clearBuf('bottom')">CLR</div>
-            <div class="send-btn" onclick="send('bottom')">➔</div>
+            <div class="buffer-box" id="bottom-buffer" contenteditable="true"></div>
+            <div class="clr-btn" onclick="clearBuf('bottom')">ล้าง</div>
+            <button class="send-btn" onclick="send('bottom')">➔</button>
         </div>
     </div>
 
     <script>
-        const langs = {
-            "th-TH":"Thai","en-US":"English","no-NO":"Norwegian","sv-SE":"Swedish","de-DE":"German","ja-JP":"Japanese",
-            "ko-KR":"Korean","zh-CN":"Chinese","fr-FR":"French","ru-RU":"Russian","it-IT":"Italian","es-ES":"Spanish",
-            "pt-PT":"Portuguese","vi-VN":"Vietnamese","ar-SA":"Arabic","hi-IN":"Hindi"
+        const universalLangs = {
+            "th-TH":"🇹🇭 Thai","en-US":"🇺🇸 English","no-NO":"🇳🇴 Norwegian","sv-SE":"🇸🇪 Swedish","de-DE":"🇩🇪 German",
+            "ja-JP":"🇯🇵 Japanese","ko-KR":"🇰🇷 Korean","zh-CN":"🇨🇳 Chinese","fr-FR":"🇫🇷 French","ru-RU":"🇷🇺 Russian",
+            "it-IT":"🇮🇹 Italian","es-ES":"🇪🇸 Spanish","pt-PT":"🇵🇹 Portuguese","vi-VN":"🇻🇳 Vietnamese","ar-SA":"🇸🇦 Arabic","hi-IN":"🇮🇳 Hindi"
         };
+        let themes = [
+            { bg: '#000', txt: '#fff', buf: '#050505', accent: '#0f0' },
+            { bg: '#1a1a1a', txt: '#e0e0e0', buf: '#222', accent: '#00ffcc' },
+            { bg: '#f4ecd8', txt: '#433422', buf: '#e8dfc8', accent: '#8b4513' } // โหมดถนอมสายตาคนแก่ [cite: 2026-01-17]
+        ];
+        let currentTheme = 0;
         let muteState = { top: false, bottom: false };
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.continuous = true; recognition.interimResults = true;
+        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false; recognition.interimResults = true;
         const synth = window.speechSynthesis;
-        let activeSide = null;
+        let currentActive = null;
 
         function init() {
             ['top', 'bottom'].forEach(side => {
                 const sel = document.getElementById(side + '-lang');
-                Object.keys(langs).forEach(k => { const opt = new Option(langs[k], k); sel.add(opt); });
-                if(side==='bottom') sel.value = 'th-TH'; else sel.value = 'en-US';
-                
-                const btn = document.getElementById(side + '-mic');
-                const start = (e) => { e.preventDefault(); activeSide = side; recognition.lang = sel.value; document.getElementById(side+'-half').classList.add('listening'); try { recognition.start(); } catch(err){} };
-                const stop = (e) => { e.preventDefault(); recognition.stop(); document.getElementById(side+'-half').classList.remove('listening'); };
-                btn.addEventListener('touchstart', start); btn.addEventListener('touchend', stop);
+                Object.keys(universalLangs).forEach(k => sel.add(new Option(universalLangs[k], k)));
+                sel.value = (side === 'top') ? 'en-US' : 'th-TH';
             });
         }
 
+        function cycleTheme() {
+            currentTheme = (currentTheme + 1) % themes.length;
+            const t = themes[currentTheme];
+            document.documentElement.style.setProperty('--bg', t.bg);
+            document.documentElement.style.setProperty('--txt', t.txt);
+            document.documentElement.style.setProperty('--buf-bg', t.buf);
+            document.documentElement.style.setProperty('--accent', t.accent);
+        }
+
+        function startVoice(side) {
+            if (currentActive) return;
+            currentActive = side;
+            document.querySelectorAll('.half').forEach(h => h.classList.remove('active'));
+            document.getElementById(side + '-half').classList.add('active');
+            recognition.lang = document.getElementById(side + '-lang').value;
+            document.getElementById(side + '-status').innerText = "LISTENING...";
+            try { recognition.start(); } catch(e) {}
+        }
+
         recognition.onresult = (e) => {
-            let t = ""; for (let i = e.resultIndex; i < e.results.length; ++i) if (e.results[i].isFinal) t += e.results[i][0].transcript;
-            if (activeSide && t) document.getElementById(activeSide + '-buffer').innerText += t;
+            let t = ""; for (let i = e.resultIndex; i < e.results.length; ++i) { t += e.results[i][0].transcript; }
+            if (currentActive) document.getElementById(currentActive + '-buffer').innerText = t;
+        };
+
+        recognition.onend = () => {
+            if (currentActive) {
+                document.getElementById(currentActive + '-status').innerText = "EDIT OR SEND";
+                setTimeout(() => {
+                    document.querySelectorAll('.half').forEach(h => h.classList.add('active'));
+                    document.getElementById(currentActive + '-status').innerText = "READY";
+                    currentActive = null;
+                }, 1500);
+            }
         };
 
         async function send(side) {
             const buf = document.getElementById(side + '-buffer');
             const text = buf.innerText.trim(); if (!text) return;
-            const other = side === 'top' ? 'bottom' : 'top';
-            const target = document.getElementById(other + '-lang').value;
+            const other = (side === 'top') ? 'bottom' : 'top';
+            const targetLang = document.getElementById(other + '-lang').value;
             try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
                 document.getElementById(other + '-display').innerText = result;
                 document.getElementById(other + '-half').classList.add('has-msg');
-                if (!muteState[other]) { const u = new SpeechSynthesisUtterance(result); u.lang = target; u.rate = 0.9; synth.speak(u); }
+                if (!muteState[other]) {
+                    const u = new SpeechSynthesisUtterance(result);
+                    u.lang = targetLang; u.rate = 0.9; synth.speak(u);
+                }
                 buf.innerText = "";
             } catch (e) {}
         }
 
-        function toggleMute(s) { muteState[s] = !muteState[s]; document.getElementById(s+'-mute').innerText = muteState[s] ? '🔇' : '🔊'; document.getElementById(s+'-mute').classList.toggle('active'); }
+        function toggleMute(s) { muteState[s] = !muteState[s]; document.getElementById(s + '-mute').innerText = muteState[s] ? '🔇' : '🔊'; document.getElementById(s + '-mute').classList.toggle('on'); }
         function clearBuf(s) { document.getElementById(s + '-buffer').innerText = ""; }
         function clearMsg(s) { const h = document.getElementById(s + '-half'); if (h.classList.contains('has-msg')) { h.classList.remove('has-msg'); document.getElementById(s + '-display').innerText = ""; synth.cancel(); } }
-
         init();
     </script>
 </body>
