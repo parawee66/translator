@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Absolute Stable - พารวีร์</title>
+    <title>Beer Anchor - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        html, body { background: #000; height: 100%; width: 100%; overflow: hidden; position: fixed; }
+        html, body { background: #000; height: 100vh; width: 100vw; overflow: hidden; position: fixed; font-family: sans-serif; }
         
-        /* 50/50 Split - Fixed and Unbreakable */
-        .half { height: 50vh; width: 100vw; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #333; padding: 1vh; }
+        /* Fixed Split */
+        .half { height: 48.5vh; width: 100vw; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; overflow: hidden; }
         .top { transform: rotate(180deg); }
 
-        /* Language Selector - Compact */
-        .lang-select { position: absolute; top: 1vh; left: 2vw; background: #222; color: #fff; border: 1px solid #444; padding: 4px; border-radius: 6px; z-index: 1000; font-size: 12px; }
+        .lang-select { position: absolute; top: 1vh; left: 2vw; background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 4px; border-radius: 6px; z-index: 1000; font-size: 12px; opacity: 0.8; }
 
-        /* Central Stage - Scale by VH */
-        .stage { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; overflow: hidden; }
-        
-        .mic-btn { width: 22vh; height: 22vh; max-width: 140px; max-height: 140px; background: #1a1a1a; border: 2px solid #444; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; transition: 0.2s; }
-        .mic-btn i { font-size: 8vh; }
-        .mic-btn span { font-size: 1.2vh; font-weight: bold; margin-top: 2px; }
+        /* Content Area */
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; padding: 10px; }
+        .mic-btn { width: 20vh; height: 20vh; max-width: 130px; max-height: 130px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; transition: 0.2s; }
+        .mic-btn i { font-size: 6vh; }
+        .mic-btn span { font-size: 1vh; font-weight: bold; }
         
         .listening .mic-btn { border-color: #ff4444; color: #ff4444; animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-        /* Large Display Box */
-        .display-box { font-size: 5vh; font-weight: 900; color: #fff; word-break: break-word; line-height: 1; display: none; padding: 2vh; }
+        .display-box { font-size: 5vh; font-weight: 900; color: #fff; word-break: break-word; line-height: 1; display: none; }
 
-        /* Buffer Zone - Clamped to 12% of Half */
-        .buffer-zone { height: 8vh; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; margin-bottom: 1vh; }
-        .input-wrap { flex: 1; background: #111; border: 1px solid #333; border-radius: 20px; display: flex; align-items: center; padding: 0 12px; height: 5vh; min-height: 35px; }
+        /* Buffer Zone */
+        .buffer-zone { height: 8vh; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; }
+        .input-wrap { flex: 1; background: #111; border: 1px solid #333; border-radius: 20px; display: flex; align-items: center; padding: 0 12px; height: 5vh; }
         .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 14px; width: 100%; }
-        .send-btn { width: 5vh; height: 5vh; min-width: 35px; min-height: 35px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: none; flex-shrink: 0; }
+        .send-btn { width: 5vh; height: 5vh; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: none; flex-shrink: 0; }
 
-        /* State Control */
+        /* The Anchor Footer */
+        footer { height: 3vh; background: #000; display: flex; align-items: center; justify-content: center; border-top: 1px solid #111; }
+        .beer-link { color: #444; text-decoration: none; font-size: 10px; letter-spacing: 1px; }
+
         .has-msg .mic-btn { display: none; }
         .has-msg .display-box { display: block; }
     </style>
@@ -42,11 +42,9 @@
 <body>
 
     <script>
-        // Full Spectrum Language [cite: 2026-01-17]
         const langList = [
             {v:'th-TH', t:'TH'}, {v:'en-US', t:'EN'}, {v:'no-NO', t:'NO'}, {v:'sv-SE', t:'SE'},
-            {v:'ja-JP', t:'JP'}, {v:'zh-CN', t:'CN'}, {v:'de-DE', t:'DE'}, {v:'fr-FR', t:'FR'},
-            {v:'ru-RU', t:'RU'}, {v:'ko-KR', t:'KR'}, {v:'it-IT', t:'IT'}, {v:'es-ES', t:'ES'}
+            {v:'ja-JP', t:'JP'}, {v:'zh-CN', t:'CN'}, {v:'de-DE', t:'DE'}, {v:'fr-FR', t:'FR'}
         ];
         const langHTML = langList.map(l => `<option value="${l.v}">${l.t}</option>`).join('');
     </script>
@@ -58,7 +56,7 @@
             <div class="display-box" id="top-display"></div>
         </div>
         <div class="buffer-zone">
-            <div class="input-wrap"><input type="text" class="chat-input" id="top-input" placeholder="Buffer..."></div>
+            <div class="input-wrap"><input type="text" class="chat-input" id="top-input" placeholder="..."></div>
             <button class="send-btn" onclick="send('top')">➔</button>
         </div>
     </div>
@@ -70,10 +68,14 @@
             <div class="display-box" id="bottom-display"></div>
         </div>
         <div class="buffer-zone">
-            <div class="input-wrap"><input type="text" class="chat-input" id="bottom-input" placeholder="ตรวจสอบ..."></div>
+            <div class="input-wrap"><input type="text" class="chat-input" id="bottom-input" placeholder="..."></div>
             <button class="send-btn" onclick="send('bottom')">➔</button>
         </div>
     </div>
+
+    <footer>
+        <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-link">DONATE FOR BEER 🍺</a>
+    </footer>
 
     <script>
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -91,15 +93,10 @@
                 if (half.classList.contains('has-msg')) return;
                 targetInput = input;
                 recognition.lang = document.getElementById(side + '-lang').value;
-                half.classList.add('listening');
-                synth.cancel();
+                half.classList.add('listening'); synth.cancel();
                 try { recognition.start(); } catch(err) {}
             };
-            const onEnd = (e) => { 
-                e.preventDefault();
-                recognition.stop();
-                half.classList.remove('listening');
-            };
+            const onEnd = (e) => { e.preventDefault(); recognition.stop(); half.classList.remove('listening'); };
 
             btn.addEventListener('mousedown', onStart); btn.addEventListener('touchstart', onStart);
             btn.addEventListener('mouseup', onEnd); btn.addEventListener('touchend', onEnd);
@@ -113,20 +110,16 @@
 
         async function send(side) {
             const input = document.getElementById(side + '-input');
-            const text = input.value;
-            if (!text) return;
-
+            if (!input.value) return;
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
 
             try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(input.value)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
-
                 document.getElementById(other + '-display').innerText = result;
                 document.getElementById(other + '-half').classList.add('has-msg');
-                
                 const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.8;
                 synth.speak(utter);
