@@ -3,64 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Central Heart - พารวีร์</title>
+    <title>Universal Honor - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; padding: 10px; }
+        
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #333; overflow: hidden; height: 50vh; }
         .top { transform: rotate(180deg); }
-        .lang-select { position: absolute; top: 10px; left: 10px; background: #222; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 8px; z-index: 100; font-size: 0.8rem; }
-        
-        /* Central Mic & Display Area */
-        .center-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .mic-button { width: 120px; height: 120px; background: #1a1a1a; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; color: #666; }
-        .mic-button i { font-size: 3rem; margin-bottom: 5px; }
-        .mic-button span { font-size: 0.7rem; font-weight: bold; }
-        .listening .mic-button { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 30px rgba(255,68,68,0.3); animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        
-        .message-box { font-size: calc(1.5rem + 3vw); font-weight: 900; color: #fff; text-align: center; word-break: break-word; padding: 20px; display: none; }
-        
-        /* Input Buffer (Bottom of each half) */
-        .buffer-bar { width: 100%; max-width: 500px; display: flex; gap: 8px; align-items: center; background: #111; padding: 10px 15px; border-radius: 30px; border: 1px solid #333; margin-top: 10px; }
-        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.1rem; }
-        .send-btn { background: #fff; color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
 
-        /* Logic States */
-        .has-message .mic-button { display: none; }
-        .has-message .message-box { display: block; }
-        .beer-icon { position: fixed; top: 50%; left: 10px; transform: translateY(-50%); opacity: 0.1; font-size: 0.8rem; color: #fff; text-decoration: none; z-index: 1000; }
+        /* Dynamic Language Selector */
+        .lang-select { position: absolute; top: 1vh; left: 2vw; background: #222; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 8px; z-index: 1000; font-size: 14px; width: 80px; }
+
+        /* Stage area for Mic & Large Text */
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2vh; text-align: center; cursor: pointer; }
+        
+        /* Central Mic: Scaling with VH to prevent overflow */
+        .mic-btn { width: 25vh; height: 25vh; max-width: 150px; max-height: 150px; background: #1a1a1a; border: 2px solid #444; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; transition: 0.3s; }
+        .mic-btn i { font-size: 8vh; max-font-size: 50px; }
+        .mic-btn span { font-size: 1.5vh; font-weight: bold; margin-top: 5px; }
+        
+        .listening .mic-btn { border-color: #ff4444; color: #ff4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        /* Display Box for results */
+        .display-box { font-size: 5vh; font-weight: 900; color: #fff; word-break: break-word; line-height: 1.1; display: none; }
+
+        /* Buffer Input Area - Clamped at Bottom */
+        .buffer-zone { height: 10vh; min-height: 60px; padding: 10px; background: #000; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .input-wrap { flex: 1; background: #1a1a1a; border: 1px solid #333; border-radius: 30px; display: flex; align-items: center; padding: 0 15px; height: 45px; }
+        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 16px; width: 100%; }
+        .send-btn { width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: none; flex-shrink: 0; }
+
+        /* State Control */
+        .has-msg .mic-btn { display: none; }
+        .has-msg .display-box { display: block; }
     </style>
 </head>
 <body>
 
     <script>
-        const langOpts = ['th-TH', 'en-GB', 'no-NO', 'sv-SE', 'ja-JP'].map(v => `<option value="${v}">${v.split('-')[1]}</option>`).join('');
+        // Global Language Support [cite: 2026-01-17]
+        const langList = [
+            {v:'th-TH', t:'TH'}, {v:'en-US', t:'EN'}, {v:'no-NO', t:'NO'}, {v:'sv-SE', t:'SE'},
+            {v:'ja-JP', t:'JP'}, {v:'zh-CN', t:'CN'}, {v:'de-DE', t:'DE'}, {v:'fr-FR', t:'FR'},
+            {v:'ru-RU', t:'RU'}, {v:'ko-KR', t:'KR'}, {v:'it-IT', t:'IT'}, {v:'es-ES', t:'ES'}
+        ];
+        const langHTML = langList.map(l => `<option value="${l.v}">${l.t}</option>`).join('');
     </script>
 
     <div class="half top" id="top-half">
-        <select class="lang-select" id="top-lang"><script>document.write(langOpts)</script></select>
-        <div class="center-stage" id="top-stage" onclick="resetSide('top')">
-            <div class="mic-button" id="top-mic-btn"><i>🎙️</i><span>HOLD TO TALK</span></div>
-            <div class="message-box" id="top-display"></div>
+        <select class="lang-select" id="top-lang"><script>document.write(langHTML)</script></select>
+        <div class="stage" onclick="clearMsg('top')">
+            <div class="mic-btn" id="top-mic"><i>🎙️</i><span>HOLD</span></div>
+            <div class="display-box" id="top-display"></div>
         </div>
-        <div class="buffer-bar">
-            <input type="text" class="chat-input" id="top-input" placeholder="Buffer...">
-            <button class="send-btn" onclick="process('top')">➔</button>
+        <div class="buffer-zone">
+            <div class="input-wrap"><input type="text" class="chat-input" id="top-input" placeholder="Buffer..."></div>
+            <button class="send-btn" onclick="send('top')">➔</button>
         </div>
     </div>
 
-    <a href="#" class="beer-icon">🍺</a>
-
     <div class="half bottom" id="bottom-half">
-        <select class="lang-select" id="bottom-lang"><script>document.write(langOpts)</script></select>
-        <div class="center-stage" id="bottom-stage" onclick="resetSide('bottom')">
-            <div class="mic-button" id="bottom-mic-btn"><i>🎙️</i><span>กดค้างเพื่อพูด</span></div>
-            <div class="message-box" id="bottom-display"></div>
+        <select class="lang-select" id="bottom-lang"><script>document.write(langHTML)</script></select>
+        <div class="stage" onclick="clearMsg('bottom')">
+            <div class="mic-btn" id="bottom-mic"><i>🎙️</i><span>กดค้าง</span></div>
+            <div class="display-box" id="bottom-display"></div>
         </div>
-        <div class="buffer-bar">
-            <input type="text" class="chat-input" id="bottom-input" placeholder="ตรวจสอบข้อความ...">
-            <button class="send-btn" onclick="process('bottom')">➔</button>
+        <div class="buffer-zone">
+            <div class="input-wrap"><input type="text" class="chat-input" id="bottom-input" placeholder="ตรวจสอบ..."></div>
+            <button class="send-btn" onclick="send('bottom')">➔</button>
         </div>
     </div>
 
@@ -68,47 +79,54 @@
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.continuous = true; recognition.interimResults = true;
         const synth = window.speechSynthesis;
-        let activeInput = null;
+        let targetInput = null;
 
         ['top', 'bottom'].forEach(side => {
-            const btn = document.getElementById(side + '-mic-btn');
+            const btn = document.getElementById(side + '-mic');
             const half = document.getElementById(side + '-half');
             const input = document.getElementById(side + '-input');
 
-            const start = (e) => {
-                if (half.classList.contains('has-message')) return;
-                e.preventDefault(); activeInput = input;
+            const onStart = (e) => {
+                e.preventDefault();
+                if (half.classList.contains('has-msg')) return;
+                targetInput = input;
                 recognition.lang = document.getElementById(side + '-lang').value;
-                half.classList.add('listening'); synth.cancel();
+                half.classList.add('listening');
+                synth.cancel();
                 try { recognition.start(); } catch(err) {}
             };
-            const end = (e) => { e.preventDefault(); recognition.stop(); half.classList.remove('listening'); };
+            const onEnd = (e) => { 
+                e.preventDefault();
+                recognition.stop();
+                half.classList.remove('listening');
+            };
 
-            btn.addEventListener('mousedown', start); btn.addEventListener('touchstart', start);
-            btn.addEventListener('mouseup', end); btn.addEventListener('touchend', end);
+            btn.addEventListener('mousedown', onStart); btn.addEventListener('touchstart', onStart);
+            btn.addEventListener('mouseup', onEnd); btn.addEventListener('touchend', onEnd);
         });
 
         recognition.onresult = (event) => {
             let res = "";
             for (let i = event.resultIndex; i < event.results.length; ++i) { res += event.results[i][0].transcript; }
-            if (activeInput) {
-                activeInput.value = (activeInput.value + " " + res).trim();
-            }
+            if (targetInput) targetInput.value = (targetInput.value + " " + res).trim();
         };
 
-        async function process(side) {
+        async function send(side) {
             const input = document.getElementById(side + '-input');
-            if (!input.value) return;
+            const text = input.value;
+            if (!text) return;
+
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
 
             try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(input.value)}`);
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
 
-                document.getElementById(other + '-display').innerText = result;
-                document.getElementById(other + '-half').classList.add('has-message');
+                const otherDisp = document.getElementById(other + '-display');
+                otherDisp.innerText = result;
+                document.getElementById(other + '-half').classList.add('has-msg');
                 
                 const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.8;
@@ -117,10 +135,10 @@
             } catch (e) { console.error(e); }
         }
 
-        function resetSide(side) {
+        function clearMsg(side) {
             const half = document.getElementById(side + '-half');
-            if (half.classList.contains('has-message')) {
-                half.classList.remove('has-message');
+            if (half.classList.contains('has-msg')) {
+                half.classList.remove('has-msg');
                 document.getElementById(side + '-display').innerText = "";
             }
         }
