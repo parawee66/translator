@@ -3,59 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Translator - Dynamic Switcher</title>
+    <title>The Translator - Voice First</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; }
         .top { transform: rotate(180deg); }
-        .lang-select { position: absolute; top: 15px; right: 15px; background: #222; color: #fff; border: 2px solid #444; padding: 10px; font-size: 1.1rem; border-radius: 8px; z-index: 100; }
-        .label { position: absolute; top: 15px; left: 15px; color: #444; font-size: 0.8rem; letter-spacing: 3px; font-weight: bold; }
+        .lang-select { position: absolute; top: 15px; left: 15px; background: #222; color: #fff; border: 2px solid #444; padding: 8px; font-size: 1rem; border-radius: 8px; z-index: 100; }
+        .label { position: absolute; top: 15px; right: 15px; color: #444; font-size: 0.8rem; letter-spacing: 2px; font-weight: bold; }
         
-        /* Display Area */
-        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; cursor: text; }
-        .text-output { font-size: 3rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; transition: 0.3s; }
-        
-        /* Hidden Input Logic */
-        .chat-input { display: none; width: 90%; background: #111; border: 2px solid #444; color: #fff; padding: 15px; font-size: 1.5rem; border-radius: 12px; margin-top: 10px; text-align: center; }
+        /* Main Interaction Area (Voice) */
+        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; cursor: pointer; position: relative; }
+        .text-output { font-size: 3rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; }
         
         /* Mic & Status */
-        .mic-btn { font-size: 2.5rem; color: #555; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .listening .mic-btn { color: #ff4444; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .mic-icon { font-size: 3.5rem; color: #333; margin-bottom: 10px; transition: 0.3s; }
+        .listening .mic-icon { color: #ff4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        
+        /* Keyboard Icon (Small at corner) */
+        .kbd-btn { position: absolute; bottom: 15px; right: 15px; font-size: 1.8rem; color: #444; cursor: pointer; z-index: 110; opacity: 0.6; }
+        .kbd-btn:hover { opacity: 1; color: #fff; }
+
+        /* Input Area (Hidden) */
+        .chat-input { display: none; width: 85%; background: #111; border: 2px solid #444; color: #fff; padding: 15px; font-size: 1.5rem; border-radius: 12px; margin-top: 10px; text-align: center; z-index: 120; }
         
         /* Controls */
-        .controls { display: none; width: 100%; height: 45%; flex-direction: row; }
+        .controls { display: none; width: 100%; height: 40%; flex-direction: row; }
         .send-btn { flex: 3; background: #fff; color: #000; border: none; font-size: 4rem; font-weight: 900; cursor: pointer; }
-        .clear-btn { flex: 1; background: #333; color: #fff; border: none; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+        .clear-btn { flex: 1; background: #333; color: #fff; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
         
-        .beer-icon { position: fixed; bottom: 15px; left: 15px; text-decoration: none; font-size: 1.8rem; opacity: 0.25; z-index: 1000; }
+        .beer-icon { position: fixed; bottom: 15px; left: 15px; text-decoration: none; font-size: 1.5rem; opacity: 0.2; z-index: 1000; }
     </style>
 </head>
 <body>
 
     <script>
         const languages = `
-            <option value="th-TH">🇹🇭 ภาษาไทย</option>
-            <option value="en-GB">🇬🇧 English</option>
-            <option value="no-NO">🇳🇴 Norsk</option>
-            <option value="sv-SE">🇸🇪 Svenska</option>
-            <option value="de-DE">🇩🇪 Deutsch</option>
-            <option value="fr-FR">🇫🇷 Français</option>
+            <option value="th-TH">🇹🇭 TH</option>
+            <option value="en-GB">🇬🇧 EN</option>
+            <option value="no-NO">🇳🇴 NO</option>
+            <option value="sv-SE">🇸🇪 SV</option>
+            <option value="de-DE">🇩🇪 DE</option>
+            <option value="fr-FR">🇫🇷 FR</option>
         `;
     </script>
 
     <div class="half top" id="top-half">
         <div class="label">SNOWBIRD</div>
         <select class="lang-select" id="top-lang"><script>document.write(languages)</script></select>
-        <div class="display-area" onclick="focusInput('top')">
-            <div class="mic-btn" onclick="handleMic('top', event)">🎙️</div>
-            <div class="text-output" id="top-display">TAP</div>
-            <input type="text" class="chat-input" id="top-input" onblur="hideInput('top')" oninput="syncText('top')">
+        <div class="display-area" onclick="handleMic('top')">
+            <div class="mic-icon">🎙️</div>
+            <div class="text-output" id="top-display">TAP TO SPEAK</div>
+            <input type="text" class="chat-input" id="top-input" onclick="event.stopPropagation()" oninput="syncText('top')">
+            <div class="kbd-btn" onclick="toggleKbd('top', event)">⌨️</div>
         </div>
         <div class="controls" id="top-controls">
             <button class="send-btn" onclick="processTranslation('top')">SEND</button>
-            <button class="clear-btn" onclick="clearText('top')">RESET</button>
+            <button class="clear-btn" onclick="clearText('top')">CLR</button>
         </div>
     </div>
 
@@ -64,10 +69,11 @@
     <div class="half bottom" id="bottom-half">
         <div class="label">YOU</div>
         <select class="lang-select" id="bottom-lang"><script>document.write(languages)</script></select>
-        <div class="display-area" onclick="focusInput('bottom')">
-            <div class="mic-btn" onclick="handleMic('bottom', event)">🎙️</div>
-            <div class="text-output" id="bottom-display">แตะ</div>
-            <input type="text" class="chat-input" id="bottom-input" onblur="hideInput('bottom')" oninput="syncText('bottom')">
+        <div class="display-area" onclick="handleMic('bottom')">
+            <div class="mic-icon">🎙️</div>
+            <div class="text-output" id="bottom-display">แตะเพื่อพูด</div>
+            <input type="text" class="chat-input" id="bottom-input" onclick="event.stopPropagation()" oninput="syncText('bottom')">
+            <div class="kbd-btn" onclick="toggleKbd('bottom', event)">⌨️</div>
         </div>
         <div class="controls" id="bottom-controls">
             <button class="send-btn" onclick="processTranslation('bottom')">ส่ง</button>
@@ -81,38 +87,11 @@
         const synth = window.speechSynthesis;
         let isListening = false, activeSide = "", accumulatedText = "";
 
-        function focusInput(side) {
-            const input = document.getElementById(side + '-input');
+        function handleMic(side) {
             const display = document.getElementById(side + '-display');
-            input.style.display = "block";
-            display.style.display = "none";
-            input.focus();
-        }
-
-        function hideInput(side) {
-            const input = document.getElementById(side + '-input');
-            const display = document.getElementById(side + '-display');
-            if(!input.value) {
-                input.style.display = "none";
-                display.style.display = "block";
-            }
-        }
-
-        function syncText(side) {
-            const input = document.getElementById(side + '-input');
-            const display = document.getElementById(side + '-display');
-            const controls = document.getElementById(side + '-controls');
-            display.innerText = input.value;
-            accumulatedText = input.value;
-            controls.style.display = input.value ? "flex" : "none";
-        }
-
-        function handleMic(side, e) {
-            e.stopPropagation();
             if (isListening && activeSide === side) { recognition.stop(); return; }
             activeSide = side;
-            const display = document.getElementById(side + '-display');
-            accumulatedText = (display.innerText === "TAP" || display.innerText === "แตะ") ? "" : display.innerText;
+            accumulatedText = (display.innerText.includes('TAP') || display.innerText.includes('แตะ')) ? "" : display.innerText;
             recognition.lang = document.getElementById(side + '-lang').value;
             try { 
                 synth.cancel(); recognition.start(); isListening = true; 
@@ -121,25 +100,40 @@
         }
 
         recognition.onresult = (event) => {
-            const display = document.getElementById(activeSide + '-display');
-            const input = document.getElementById(activeSide + '-input');
-            const controls = document.getElementById(activeSide + '-controls');
+            const display = document.getElementById(activeSide + '-display'), controls = document.getElementById(activeSide + '-controls');
             let interim = "";
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) accumulatedText += (accumulatedText ? " " : "") + event.results[i][0].transcript;
                 else interim = event.results[i][0].transcript;
             }
-            const current = accumulatedText + (interim ? " " + interim : "");
-            display.innerText = current;
-            input.value = current;
+            display.innerText = accumulatedText + (interim ? " " + interim : "");
             controls.style.display = "flex";
         };
 
+        function toggleKbd(side, e) {
+            e.stopPropagation();
+            const input = document.getElementById(side + '-input');
+            const display = document.getElementById(side + '-display');
+            if (input.style.display === "block") {
+                input.style.display = "none";
+                display.style.display = "block";
+            } else {
+                input.style.display = "block";
+                display.style.display = "none";
+                input.focus();
+            }
+        }
+
+        function syncText(side) {
+            const input = document.getElementById(side + '-input'), display = document.getElementById(side + '-display'), controls = document.getElementById(side + '-controls');
+            display.innerText = input.value;
+            accumulatedText = input.value;
+            controls.style.display = input.value ? "flex" : "none";
+        }
+
         function clearText(side) {
-            document.getElementById(side + '-display').innerText = (side === 'top' ? "TAP" : "แตะ");
-            document.getElementById(side + '-display').style.display = "block";
+            document.getElementById(side + '-display').innerText = (side === 'top' ? "TAP TO SPEAK" : "แตะเพื่อพูด");
             document.getElementById(side + '-input').value = "";
-            document.getElementById(side + '-input').style.display = "none";
             document.getElementById(side + '-controls').style.display = "none";
             accumulatedText = "";
         }
