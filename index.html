@@ -2,49 +2,38 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Beer Anchor - พารวีร์</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Universal Eternal - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        html, body { background: #000; height: 100vh; width: 100vw; overflow: hidden; position: fixed; font-family: sans-serif; }
-        
-        /* Fixed Split */
-        .half { height: 48.5vh; width: 100vw; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; overflow: hidden; }
+        body, html { background: #000; height: 100%; width: 100%; display: flex; flex-direction: column; overflow: hidden; position: fixed; font-family: sans-serif; }
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; min-height: 0; }
         .top { transform: rotate(180deg); }
-
-        .lang-select { position: absolute; top: 1vh; left: 2vw; background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 4px; border-radius: 6px; z-index: 1000; font-size: 12px; opacity: 0.8; }
-
-        /* Content Area */
-        .stage { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; padding: 10px; }
-        .mic-btn { width: 20vh; height: 20vh; max-width: 130px; max-height: 130px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; transition: 0.2s; }
-        .mic-btn i { font-size: 6vh; }
-        .mic-btn span { font-size: 1vh; font-weight: bold; }
-        
-        .listening .mic-btn { border-color: #ff4444; color: #ff4444; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-        .display-box { font-size: 5vh; font-weight: 900; color: #fff; word-break: break-word; line-height: 1; display: none; }
-
-        /* Buffer Zone */
-        .buffer-zone { height: 8vh; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; }
-        .input-wrap { flex: 1; background: #111; border: 1px solid #333; border-radius: 20px; display: flex; align-items: center; padding: 0 12px; height: 5vh; }
-        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 14px; width: 100%; }
-        .send-btn { width: 5vh; height: 5vh; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: none; flex-shrink: 0; }
-
-        /* The Anchor Footer */
-        footer { height: 3vh; background: #000; display: flex; align-items: center; justify-content: center; border-top: 1px solid #111; }
-        .beer-link { color: #444; text-decoration: none; font-size: 10px; letter-spacing: 1px; }
-
+        .lang-select { position: absolute; top: 10px; left: 10px; background: rgba(30,30,30,0.9); color: #fff; border: 1px solid #444; padding: 5px; border-radius: 6px; z-index: 1000; font-size: 12px; max-width: 90px; }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; padding: 15px; overflow: hidden; }
+        .mic-btn { width: 28vw; height: 28vw; max-width: 130px; max-height: 130px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; transition: 0.2s; }
+        .mic-btn i { font-size: 35px; }
+        .mic-btn span { font-size: 9px; font-weight: bold; margin-top: 4px; }
+        .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.2); }
+        .display-box { font-size: 8vw; font-weight: 900; color: #fff; word-break: break-word; line-height: 1.1; display: none; padding: 10px; }
+        .buffer-zone { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.6); }
+        .input-wrap { flex: 1; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; display: flex; align-items: center; padding: 0 15px; height: 42px; }
+        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 16px; width: 100%; }
+        .send-btn { width: 42px; height: 42px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: none; flex-shrink: 0; }
+        footer { background: #000; padding: 4px; text-align: center; border-top: 1px solid #111; flex-shrink: 0; }
+        .beer-link { color: #333; text-decoration: none; font-size: 9px; letter-spacing: 1px; }
         .has-msg .mic-btn { display: none; }
         .has-msg .display-box { display: block; }
     </style>
 </head>
 <body>
-
     <script>
+        // ชุดภาษา Universal ล็อคตายตัวเพื่อความเพียว [cite: 2026-01-17]
         const langList = [
-            {v:'th-TH', t:'TH'}, {v:'en-US', t:'EN'}, {v:'no-NO', t:'NO'}, {v:'sv-SE', t:'SE'},
-            {v:'ja-JP', t:'JP'}, {v:'zh-CN', t:'CN'}, {v:'de-DE', t:'DE'}, {v:'fr-FR', t:'FR'}
+            {v:'th-TH', t:'🇹🇭 TH'}, {v:'en-US', t:'🇺🇸 EN'}, {v:'no-NO', t:'🇳🇴 NO'}, {v:'sv-SE', t:'🇸🇪 SE'},
+            {v:'ja-JP', t:'🇯🇵 JP'}, {v:'zh-CN', t:'🇨🇳 ZH'}, {v:'ko-KR', t:'🇰🇷 KR'}, {v:'de-DE', t:'🇩🇪 DE'},
+            {v:'fr-FR', t:'🇫🇷 FR'}, {v:'ru-RU', t:'🇷🇺 RU'}, {v:'it-IT', t:'🇮🇹 IT'}, {v:'es-ES', t:'🇪🇸 ES'},
+            {v:'pt-PT', t:'🇵🇹 PT'}, {v:'vi-VN', t:'🇻🇳 VI'}, {v:'hi-IN', t:'🇮🇳 HI'}, {v:'ar-SA', t:'🇸🇦 AR'}
         ];
         const langHTML = langList.map(l => `<option value="${l.v}">${l.t}</option>`).join('');
     </script>
@@ -87,17 +76,14 @@
             const btn = document.getElementById(side + '-mic');
             const half = document.getElementById(side + '-half');
             const input = document.getElementById(side + '-input');
-
             const onStart = (e) => {
-                e.preventDefault();
                 if (half.classList.contains('has-msg')) return;
-                targetInput = input;
+                e.preventDefault(); targetInput = input;
                 recognition.lang = document.getElementById(side + '-lang').value;
                 half.classList.add('listening'); synth.cancel();
                 try { recognition.start(); } catch(err) {}
             };
             const onEnd = (e) => { e.preventDefault(); recognition.stop(); half.classList.remove('listening'); };
-
             btn.addEventListener('mousedown', onStart); btn.addEventListener('touchstart', onStart);
             btn.addEventListener('mouseup', onEnd); btn.addEventListener('touchend', onEnd);
         });
@@ -113,7 +99,6 @@
             if (!input.value) return;
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
-
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(input.value)}`);
                 const data = await res.json();
