@@ -3,139 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Unbreakable Master - พารวีร์</title>
+    <title>Universal Pure Desk - พารวีร์</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        body, html { 
-            background: #000; height: 100%; width: 100%; 
-            overflow: hidden; position: fixed; font-family: sans-serif; color: #fff; 
-            display: flex; flex-direction: column;
-        }
-        
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; min-height: 0; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: none; }
+        body, html { background: #000; height: 100%; width: 100%; overflow: hidden; position: fixed; font-family: sans-serif; color: #fff; }
+        .half { height: 50%; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; }
         .top { transform: rotate(180deg); }
-
-        /* ล็อคปุ่มเข้ากับมุมให้ตายตัว [cite: 2026-01-17] */
-        .lang-select { position: absolute; top: 12px; left: 12px; background: rgba(30,30,30,0.9); color: #fff; border: 1px solid #444; font-size: 11px; z-index: 110; border-radius: 4px; padding: 2px; }
-        .mute-btn { position: absolute; top: 12px; right: 12px; background: rgba(30,30,30,0.9); border: 1px solid #444; color: #888; padding: 6px; border-radius: 4px; z-index: 110; font-size: 14px; cursor: pointer; }
+        
+        /* สภาพคล่องของการตั้งค่า */
+        .controls { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; z-index: 100; }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 12px; border-radius: 4px; padding: 2px; }
+        .mute-btn { background: #222; border: 1px solid #444; color: #888; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
         .mute-btn.active { color: #ff4444; border-color: #ff4444; }
 
-        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 10px; }
-        .mic-btn { width: 26vw; height: 26vw; max-width: 100px; max-height: 100px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; z-index: 5; }
-        .mic-btn i { font-size: 28px; margin-bottom: 2px; }
-        .mic-btn span { font-size: 9px; font-weight: bold; }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; }
+        .mic-btn { width: 100px; height: 100px; background: #111; border: 3px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; cursor: pointer; transition: 0.2s; }
+        .mic-btn span { font-size: 10px; font-weight: bold; margin-top: 5px; }
+        .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
 
-        /* ข้อความล้นต้องสกรอลล์ในตัวเอง ไม่เบียดปุ่ม [cite: 2026-01-17] */
-        .display-box { font-size: 8vw; font-weight: 900; line-height: 1.1; display: none; padding: 10px; text-align: center; width: 100%; max-height: 100%; overflow-y: auto; word-break: break-word; }
-
-        .kb-container { position: absolute; bottom: -100%; width: 100%; height: 100%; background: #000; transition: 0.3s; display: flex; flex-direction: column; padding: 8px; z-index: 100; }
-        .kb-container.active { bottom: 0; }
-        .kb-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; flex: 1; overflow-y: auto; }
-        .key { background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; height: 35px; color: #ccc; border: 1px solid #222; }
-
-        .buffer-row { height: 70px; background: #0a0a0a; border-top: 1px solid #1a1a1a; display: flex; align-items: center; gap: 8px; padding: 0 12px; flex-shrink: 0; position: relative; }
-        .kb-toggle { font-size: 24px; color: #444; flex-shrink: 0; }
-        .kb-toggle.active { color: #0f0; }
-        .buffer-box { flex: 1; background: #000; border: 1px solid #333; border-radius: 6px; padding: 10px; font-size: 16px; color: #0f0; min-height: 44px; max-height: 44px; overflow-x: auto; white-space: nowrap; outline: none; }
-        
-        /* ปุ่มแก้ไขข้อความ ล็อคตำแหน่งข้างปุ่มส่ง [cite: 2026-01-17] */
-        .action-btns { display: flex; flex-direction: column; gap: 2px; margin-right: 5px; }
-        .mini-btn { background: #222; border: 1px solid #444; color: #888; font-size: 9px; width: 35px; height: 20px; border-radius: 3px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        .send-btn { width: 48px; height: 48px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #000; flex-shrink: 0; }
-
-        .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 15px rgba(255,68,68,0.2); }
-        .has-msg .mic-btn, .has-msg .kb-container, .has-msg .kb-toggle { display: none !important; }
+        .display-box { font-size: 8vw; font-weight: 900; line-height: 1.2; text-align: center; width: 100%; max-height: 80%; overflow-y: auto; display: none; padding: 20px; word-break: break-word; }
+        .has-msg .mic-btn { display: none; }
         .has-msg .display-box { display: block; }
 
-        footer { height: 20px; background: #000; font-size: 8px; color: #222; text-align: center; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .buffer-row { height: 60px; background: #0a0a0a; border-top: 1px solid #222; display: flex; align-items: center; gap: 8px; padding: 0 10px; flex-shrink: 0; }
+        .buffer-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; font-size: 16px; color: #0f0; outline: none; overflow-x: auto; white-space: nowrap; }
+        .btn-sm { background: #222; color: #888; border: 1px solid #444; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .send-btn { width: 45px; height: 45px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <script>
-        const globalLangs = {
-            'th-TH': { n:'🇹🇭 TH', k:"กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮะาิีึืุูเแโใไ'.ๆ".split("") },
-            'en-US': { n:'🇺🇸 EN', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") },
-            'no-NO': { n:'🇳🇴 NO', k:"QWERTYUIOPÅASDFGHJKLØÆZXCVBNM,.?".split("") },
-            'sv-SE': { n:'🇸🇪 SE', k:"QWERTYUIOPÅASDFGHJKLÖÄZXCVBNM,.?".split("") },
-            'ja-JP': { n:'🇯🇵 JP', k:"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("") }
-        };
-        let muteState = { top: false, bottom: false };
-    </script>
 
     <div class="half top" id="top-half">
-        <select class="lang-select" id="top-lang" onchange="initKB('top')"></select>
-        <div class="mute-btn" id="top-mute" onclick="toggleMute('top')">🔊</div>
+        <div class="controls">
+            <select id="top-lang"></select>
+            <div class="mute-btn" id="top-mute" onclick="toggleMute('top')">🔊</div>
+        </div>
         <div class="stage" onclick="clearMsg('top')">
-            <div class="mic-btn" id="top-mic"><i>🎙️</i><span>HOLD</span></div>
+            <div class="mic-btn" id="top-mic">🎙️<span>HOLD</span></div>
             <div class="display-box" id="top-display"></div>
-            <div class="kb-container" id="top-kb-box"><div class="kb-grid" id="top-kb-grid"></div></div>
         </div>
         <div class="buffer-row">
-            <div class="kb-toggle" id="top-kb-btn" onclick="toggleKB('top')">⌨️</div>
-            <div class="buffer-box" id="top-buffer" contenteditable="true"></div>
-            <div class="action-btns"><div class="mini-btn" onclick="delChar('top')">DEL</div><div class="mini-btn" onclick="clearBuf('top')">CLR</div></div>
+            <div class="buffer-input" id="top-buffer" contenteditable="true"></div>
+            <div class="btn-sm" onclick="clearBuf('top')">CLR</div>
             <div class="send-btn" onclick="send('top')">➔</div>
         </div>
     </div>
 
     <div class="half bottom" id="bottom-half">
-        <select class="lang-select" id="bottom-lang" onchange="initKB('bottom')"></select>
-        <div class="mute-btn" id="bottom-mute" onclick="toggleMute('bottom')">🔊</div>
+        <div class="controls">
+            <select id="bottom-lang"></select>
+            <div class="mute-btn" id="bottom-mute" onclick="toggleMute('bottom')">🔊</div>
+        </div>
         <div class="stage" onclick="clearMsg('bottom')">
-            <div class="mic-btn" id="bottom-mic"><i>🎙️</i><span>กดค้าง</span></div>
+            <div class="mic-btn" id="bottom-mic">🎙️<span>กดค้าง</span></div>
             <div class="display-box" id="bottom-display"></div>
-            <div class="kb-container" id="bottom-kb-box"><div class="kb-grid" id="bottom-kb-grid"></div></div>
         </div>
         <div class="buffer-row">
-            <div class="kb-toggle" id="bottom-kb-btn" onclick="toggleKB('bottom')">⌨️</div>
-            <div class="buffer-box" id="bottom-buffer" contenteditable="true"></div>
-            <div class="action-btns"><div class="mini-btn" onclick="delChar('bottom')">DEL</div><div class="mini-btn" onclick="clearBuf('bottom')">CLR</div></div>
+            <div class="buffer-input" id="bottom-buffer" contenteditable="true"></div>
+            <div class="btn-sm" onclick="clearBuf('bottom')">CLR</div>
             <div class="send-btn" onclick="send('bottom')">➔</div>
         </div>
     </div>
 
-    <footer>DONATE FOR BEER 🍺</footer>
-
     <script>
+        const langs = {
+            "th-TH":"Thai","en-US":"English","no-NO":"Norwegian","sv-SE":"Swedish","de-DE":"German","ja-JP":"Japanese",
+            "ko-KR":"Korean","zh-CN":"Chinese","fr-FR":"French","ru-RU":"Russian","it-IT":"Italian","es-ES":"Spanish",
+            "pt-PT":"Portuguese","vi-VN":"Vietnamese","ar-SA":"Arabic","hi-IN":"Hindi"
+        };
+        let muteState = { top: false, bottom: false };
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.continuous = true; recognition.interimResults = true;
         const synth = window.speechSynthesis;
         let activeSide = null;
 
-        function toggleMute(side) {
-            muteState[side] = !muteState[side];
-            document.getElementById(side + '-mute').innerText = muteState[side] ? '🔇' : '🔊';
-            document.getElementById(side + '-mute').classList.toggle('active');
+        function init() {
+            ['top', 'bottom'].forEach(side => {
+                const sel = document.getElementById(side + '-lang');
+                Object.keys(langs).forEach(k => { const opt = new Option(langs[k], k); sel.add(opt); });
+                if(side==='bottom') sel.value = 'th-TH'; else sel.value = 'en-US';
+                
+                const btn = document.getElementById(side + '-mic');
+                const start = (e) => { e.preventDefault(); activeSide = side; recognition.lang = sel.value; document.getElementById(side+'-half').classList.add('listening'); try { recognition.start(); } catch(err){} };
+                const stop = (e) => { e.preventDefault(); recognition.stop(); document.getElementById(side+'-half').classList.remove('listening'); };
+                btn.addEventListener('touchstart', start); btn.addEventListener('touchend', stop);
+            });
         }
 
-        function initKB(side) {
-            const select = document.getElementById(side + '-lang');
-            if (select.innerHTML === "") select.innerHTML = Object.keys(globalLangs).map(k => `<option value="${k}">${globalLangs[k].n}</option>`).join('');
-            const grid = document.getElementById(side + '-kb-grid');
-            grid.innerHTML = globalLangs[select.value].k.map(c => `<div class="key" onclick="addChar('${side}','${c}')">${c}</div>`).join('') + `<div class="key" style="grid-column: span 2" onclick="addChar('${side}',' ')">SPACE</div>` + `<div class="key" style="grid-column: span 2" onclick="toggleKB('${side}')">DONE</div>`;
-        }
-
-        function toggleKB(side) { document.getElementById(side + '-kb-box').classList.toggle('active'); document.getElementById(side + '-kb-btn').classList.toggle('active'); }
-        function addChar(side, c) { document.getElementById(side + '-buffer').innerText += c; }
-        function delChar(side) { let b = document.getElementById(side + '-buffer'); b.innerText = b.innerText.slice(0, -1); }
-        function clearBuf(side) { document.getElementById(side + '-buffer').innerText = ""; }
-
-        ['top', 'bottom'].forEach(side => {
-            initKB(side);
-            const btn = document.getElementById(side + '-mic');
-            const start = (e) => { e.preventDefault(); activeSide = side; recognition.lang = document.getElementById(side + '-lang').value; document.getElementById(side + '-half').classList.add('listening'); try { recognition.start(); } catch(err) {} };
-            const end = (e) => { e.preventDefault(); recognition.stop(); document.getElementById(side + '-half').classList.remove('listening'); };
-            btn.addEventListener('touchstart', start); btn.addEventListener('touchend', end);
-        });
-
-        recognition.onresult = (event) => {
-            let res = ""; for (let i = event.resultIndex; i < event.results.length; ++i) if (event.results[i].isFinal) res += event.results[i][0].transcript;
-            if (activeSide && res) document.getElementById(activeSide + '-buffer').innerText += res;
+        recognition.onresult = (e) => {
+            let t = ""; for (let i = e.resultIndex; i < e.results.length; ++i) if (e.results[i].isFinal) t += e.results[i][0].transcript;
+            if (activeSide && t) document.getElementById(activeSide + '-buffer').innerText += t;
         };
 
         async function send(side) {
-            const b = document.getElementById(side + '-buffer');
-            const text = b.innerText.trim(); if (!text) return;
+            const buf = document.getElementById(side + '-buffer');
+            const text = buf.innerText.trim(); if (!text) return;
             const other = side === 'top' ? 'bottom' : 'top';
             const target = document.getElementById(other + '-lang').value;
             try {
@@ -144,12 +106,16 @@
                 const result = data[0][0][0];
                 document.getElementById(other + '-display').innerText = result;
                 document.getElementById(other + '-half').classList.add('has-msg');
-                if (!muteState[other]) { const utter = new SpeechSynthesisUtterance(result); utter.lang = target; utter.rate = 0.85; synth.speak(utter); }
-                b.innerText = "";
+                if (!muteState[other]) { const u = new SpeechSynthesisUtterance(result); u.lang = target; u.rate = 0.9; synth.speak(u); }
+                buf.innerText = "";
             } catch (e) {}
         }
 
-        function clearMsg(side) { const h = document.getElementById(side + '-half'); if (h.classList.contains('has-msg')) { h.classList.remove('has-msg'); document.getElementById(side + '-display').innerText = ""; synth.cancel(); } }
+        function toggleMute(s) { muteState[s] = !muteState[s]; document.getElementById(s+'-mute').innerText = muteState[s] ? '🔇' : '🔊'; document.getElementById(s+'-mute').classList.toggle('active'); }
+        function clearBuf(s) { document.getElementById(s + '-buffer').innerText = ""; }
+        function clearMsg(s) { const h = document.getElementById(s + '-half'); if (h.classList.contains('has-msg')) { h.classList.remove('has-msg'); document.getElementById(s + '-display').innerText = ""; synth.cancel(); } }
+
+        init();
     </script>
 </body>
 </html>
