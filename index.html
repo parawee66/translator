@@ -3,62 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Masterpiece - พารวีร์</title>
+    <title>The Confirmation - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+        body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; }
         .top { transform: rotate(180deg); }
-        .lang-select { position: absolute; top: 15px; left: 15px; background: #222; color: #fff; border: 2px solid #444; padding: 10px; font-size: 1.1rem; border-radius: 8px; z-index: 100; }
+        .lang-select { position: absolute; top: 15px; left: 15px; background: #222; color: #fff; border: 2px solid #444; padding: 10px; font-size: 1rem; border-radius: 8px; z-index: 100; }
         
-        /* Interaction Area */
-        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; cursor: pointer; position: relative; }
-        .text-output { font-size: 3rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; }
-        
-        /* Hold to Talk Status */
-        .status-dot { display: none; align-items: center; color: #ff4444; font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
-        .listening .status-dot { display: flex; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        
-        /* Corner Controls */
-        .kbd-btn { position: absolute; bottom: 15px; right: 15px; font-size: 2rem; color: #444; cursor: pointer; z-index: 110; }
-        .beer-icon { position: fixed; bottom: 15px; left: 15px; text-decoration: none; font-size: 1.8rem; opacity: 0.3; z-index: 1000; }
+        /* Display Area */
+        .display-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .text-output { font-size: 2.5rem; font-weight: 900; color: #fff; text-align: center; line-height: 1.1; word-break: break-word; }
+        .text-output[contenteditable="true"] { border: 1px dashed #555; padding: 5px; border-radius: 10px; background: #111; }
 
-        /* Hidden Keyboard Input */
-        .input-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
-        .chat-input { width: 90%; background: #222; border: 2px solid #fff; color: #fff; padding: 20px; font-size: 2rem; border-radius: 15px; text-align: center; }
-        .input-controls { display: flex; gap: 20px; margin-top: 20px; width: 90%; }
-        .btn { flex: 1; padding: 20px; font-size: 1.5rem; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; }
-        .btn-send { background: #fff; color: #000; }
-        .btn-cancel { background: #444; color: #fff; }
+        /* Giant Hold Button */
+        .hold-btn { position: absolute; bottom: 15px; right: 15px; width: 100px; height: 100px; background: #333; border: 4px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #fff; z-index: 110; cursor: pointer; }
+        .listening .hold-btn { background: #ff4444; border-color: #fff; transform: scale(1.1); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* Action Buttons (Review Mode) */
+        .action-overlay { display: none; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 150; border-top: 2px solid #fff; }
+        .btn-group { display: flex; gap: 10px; width: 90%; }
+        .btn { flex: 1; padding: 25px; font-size: 1.8rem; font-weight: 900; border-radius: 15px; border: none; cursor: pointer; }
+        .btn-confirm { background: #fff; color: #000; }
+        .btn-retry { background: #444; color: #fff; }
+
+        /* Keyboard Icon */
+        .kbd-btn { position: absolute; bottom: 15px; left: 60px; font-size: 1.8rem; color: #555; z-index: 100; cursor: pointer; }
+        .beer-icon { position: fixed; bottom: 15px; left: 15px; text-decoration: none; font-size: 1.5rem; opacity: 0.3; z-index: 1000; }
     </style>
 </head>
 <body>
 
     <script>
         const languages = `
-            <option value="th-TH">🇹🇭 THAI</option>
-            <option value="en-GB">🇬🇧 ENGLISH</option>
-            <option value="no-NO">🇳🇴 NORSK</option>
-            <option value="sv-SE">🇸🇪 SVENSKA</option>
-            <option value="de-DE">🇩🇪 DEUTSCH</option>
-            <option value="fr-FR">🇫🇷 FRANÇAIS</option>
-            <option value="ru-RU">🇷🇺 RUSSIAN</option>
+            <option value="th-TH">🇹🇭 TH</option>
+            <option value="en-GB">🇬🇧 EN</option>
+            <option value="no-NO">🇳🇴 NO</option>
+            <option value="sv-SE">🇸🇪 SV</option>
+            <option value="fr-FR">🇫🇷 FR</option>
         `;
     </script>
 
     <div class="half top" id="top-half">
         <select class="lang-select" id="top-lang"><script>document.write(languages)</script></select>
-        <div class="display-area" id="top-area">
-            <div class="status-dot">● LISTENING</div>
-            <div class="text-output" id="top-display">HOLD TO TALK</div>
-            <div class="kbd-btn" onclick="openKbd('top')">⌨️</div>
+        <div class="display-area">
+            <div class="text-output" id="top-display" contenteditable="true">HOLD BUTTON TO TALK</div>
         </div>
-        <div class="input-overlay" id="top-overlay">
-            <input type="text" class="chat-input" id="top-input" placeholder="Type here...">
-            <div class="input-controls">
-                <button class="btn btn-cancel" onclick="closeKbd('top')">X</button>
-                <button class="btn btn-send" onclick="sendInput('top')">SEND</button>
+        <div class="hold-btn" id="top-hold">🎙️</div>
+        <div class="kbd-btn" onclick="document.getElementById('top-display').focus()">⌨️</div>
+        <div class="action-overlay" id="top-actions">
+            <div class="btn-group">
+                <button class="btn btn-retry" onclick="resetSide('top')">RETAKE</button>
+                <button class="btn btn-confirm" onclick="finalSend('top')">SEND</button>
             </div>
         </div>
     </div>
@@ -67,16 +64,15 @@
 
     <div class="half bottom" id="bottom-half">
         <select class="lang-select" id="bottom-lang"><script>document.write(languages)</script></select>
-        <div class="display-area" id="bottom-area">
-            <div class="status-dot">● กำลังฟัง...</div>
-            <div class="text-output" id="bottom-display">กดค้างเพื่อพูด</div>
-            <div class="kbd-btn" onclick="openKbd('bottom')">⌨️</div>
+        <div class="display-area">
+            <div class="text-output" id="bottom-display" contenteditable="true">กดแช่เพื่อพูด</div>
         </div>
-        <div class="input-overlay" id="bottom-overlay">
-            <input type="text" class="chat-input" id="bottom-input" placeholder="พิมพ์ตรงนี้...">
-            <div class="input-controls">
-                <button class="btn btn-cancel" onclick="closeKbd('bottom')">ยกเลิก</button>
-                <button class="btn btn-send" onclick="sendInput('bottom')">ส่ง</button>
+        <div class="hold-btn" id="bottom-hold">🎙️</div>
+        <div class="kbd-btn" onclick="document.getElementById('bottom-display').focus()">⌨️</div>
+        <div class="action-overlay" id="bottom-actions">
+            <div class="btn-group">
+                <button class="btn btn-retry" onclick="resetSide('bottom')">พูดใหม่</button>
+                <button class="btn btn-confirm" onclick="finalSend('bottom')">ยืนยัน</button>
             </div>
         </div>
     </div>
@@ -87,30 +83,41 @@
         const synth = window.speechSynthesis;
         let activeSide = "";
 
-        // Setup Hold to Talk for both sides
         ['top', 'bottom'].forEach(side => {
-            const area = document.getElementById(side + '-area');
-            const start = (e) => { e.preventDefault(); startListening(side); };
-            const end = (e) => { e.preventDefault(); stopListening(side); };
+            const btn = document.getElementById(side + '-hold');
+            const start = (e) => { e.preventDefault(); startVoice(side); };
+            const end = (e) => { e.preventDefault(); stopVoice(side); };
+            btn.addEventListener('mousedown', start);
+            btn.addEventListener('touchstart', start);
+            btn.addEventListener('mouseup', end);
+            btn.addEventListener('touchend', end);
             
-            area.addEventListener('mousedown', start);
-            area.addEventListener('touchstart', start);
-            area.addEventListener('mouseup', end);
-            area.addEventListener('touchend', end);
+            // Sync manual editing to the flow
+            document.getElementById(side + '-display').addEventListener('input', () => {
+                if(document.getElementById(side + '-display').innerText.length > 5) {
+                    document.getElementById(side + '-actions').style.display = "flex";
+                }
+            });
         });
 
-        function startListening(side) {
+        function startVoice(side) {
             activeSide = side;
             recognition.lang = document.getElementById(side + '-lang').value;
             document.getElementById(side + '-half').classList.add('listening');
             document.getElementById(side + '-display').innerText = "...";
+            document.getElementById(side + '-actions').style.display = "none";
             synth.cancel();
             try { recognition.start(); } catch(e) {}
         }
 
-        function stopListening(side) {
+        function stopVoice(side) {
             recognition.stop();
             document.getElementById(side + '-half').classList.remove('listening');
+            setTimeout(() => {
+                if(document.getElementById(side + '-display').innerText !== "...") {
+                    document.getElementById(side + '-actions').style.display = "flex";
+                }
+            }, 500);
         }
 
         recognition.onresult = (event) => {
@@ -121,40 +128,33 @@
             document.getElementById(activeSide + '-display').innerText = transcript;
         };
 
-        recognition.onend = () => {
-            const text = document.getElementById(activeSide + '-display').innerText;
-            if (text && text !== "..." && text !== "HOLD TO TALK" && text !== "กดค้างเพื่อพูด") {
-                processTranslation(activeSide, text);
-            }
-        };
+        function resetSide(side) {
+            document.getElementById(side + '-display').innerText = (side === 'top' ? "HOLD TO TALK" : "กดแช่เพื่อพูด");
+            document.getElementById(side + '-actions').style.display = "none";
+        }
 
-        async function processTranslation(side, text) {
+        async function finalSend(side) {
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
-            const myDisplay = document.getElementById(side + '-display'), otherDisplay = document.getElementById(other + '-display');
+            const text = document.getElementById(side + '-display').innerText;
+            const otherDisplay = document.getElementById(other + '-display');
             
-            myDisplay.innerText = "WAIT...";
+            document.getElementById(side + '-actions').style.display = "none";
+            document.getElementById(side + '-display').innerText = "TRANSLATING...";
+
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
                 otherDisplay.innerText = result;
-                myDisplay.innerText = "OK";
+                document.getElementById(side + '-display').innerText = "DONE";
                 
                 const utter = new SpeechSynthesisUtterance(result);
-                utter.lang = targetLang; utter.rate = 0.7; // ช้าลงเพื่อคนแก่
+                utter.lang = targetLang; utter.rate = 0.7;
                 synth.speak(utter);
-            } catch (e) { myDisplay.innerText = "ERR"; }
-        }
-
-        function openKbd(side) { document.getElementById(side + '-overlay').style.display = "flex"; }
-        function closeKbd(side) { document.getElementById(side + '-overlay').style.display = "none"; }
-        function sendInput(side) {
-            const val = document.getElementById(side + '-input').value;
-            if (val) {
-                document.getElementById(side + '-display').innerText = val;
-                processTranslation(side, val);
-                closeKbd(side);
+                setTimeout(() => resetSide(side), 2000);
+            } catch (e) { 
+                document.getElementById(side + '-display').innerText = "ERROR"; 
             }
         }
     </script>
