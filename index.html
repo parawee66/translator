@@ -8,25 +8,25 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; transition: 0.3s; }
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 2px solid #1a1a1a; }
         .top { transform: rotate(180deg); background: #000; }
         .bottom { background: #000; }
 
         .lang-select {
             position: absolute; top: 15px; right: 15px; background: #222; color: #fff;
             border: 2px solid #444; padding: 10px; font-size: 1.2rem; border-radius: 8px; z-index: 10;
-            appearance: none; -webkit-appearance: none;
         }
 
         .display-area { 
-            flex: 1; display: flex; align-items: center; justify-content: center; 
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
             font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; padding: 20px;
-            line-height: 1.2; word-break: break-word;
+            line-height: 1.2; word-break: break-word; position: relative;
         }
 
-        /* สถานะการรับฟัง (Pulse Effect) */
-        .listening { animation: pulse 1.5s infinite; color: #ff4444 !important; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        /* Status Indicator: จุดแดงกระพริบ */
+        .status-dot { display: none; font-size: 1.5rem; color: #ff4444; margin-bottom: 10px; }
+        .listening .status-dot { display: block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
 
         .send-btn { 
             display: none; width: 100%; height: 45%; background: #fff; color: #000; 
@@ -35,12 +35,12 @@
 
         .label { position: absolute; top: 15px; left: 15px; color: #555; font-size: 0.9rem; letter-spacing: 2px; }
 
-        /* ไอคอนค่าเบียร์ มุมซ้ายล่าง */
-        .beer-link {
-            position: fixed; bottom: 15px; left: 15px; color: rgba(255,255,255,0.2);
-            text-decoration: none; font-size: 1.5rem; z-index: 100; transition: 0.3s;
+        /* ไอคอนค่าเบียร์มุมซ้ายล่างจางๆ */
+        .beer-bottom-left {
+            position: fixed; bottom: 10px; left: 10px; z-index: 100;
+            text-decoration: none; opacity: 0.2; font-size: 1.5rem; transition: 0.3s;
         }
-        .beer-link:hover { color: rgba(255,255,255,0.8); }
+        .beer-bottom-left:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -59,11 +59,14 @@
             <option value="fr-FR">🇫🇷 Français</option>
             <option value="th-TH">🇹🇭 ภาษาไทย</option>
         </select>
-        <div class="display-area" id="top-display" onclick="toggleListen('top')">TAP</div>
+        <div class="display-area" id="top-display-box" onclick="toggleListen('top')">
+            <div class="status-dot">● LISTENING</div>
+            <div id="top-display">TAP</div>
+        </div>
         <button class="send-btn" id="top-send" onclick="translateAndSend('top')">SEND</button>
     </div>
 
-    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-link">🍺</a>
+    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-bottom-left">🍺</a>
 
     <div class="half bottom" id="bottom-half">
         <div class="label">YOU</div>
@@ -73,68 +76,69 @@
             <option value="de-DE">🇩🇪 Deutsch</option>
             <option value="no-NO">🇳🇴 Norsk</option>
         </select>
-        <div class="display-area" id="bottom-display" onclick="toggleListen('bottom')">แตะ</div>
+        <div class="display-area" id="bottom-display-box" onclick="toggleListen('bottom')">
+            <div class="status-dot">● กำลังฟัง</div>
+            <div id="bottom-display">แตะ</div>
+        </div>
         <button class="send-btn" id="bottom-send" onclick="translateAndSend('bottom')">ส่ง</button>
     </div>
 
     <script>
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        recognition.continuous = true; // ให้ฟังต่อเนื่องจนกว่าจะกดหยุดเอง
+        recognition.continuous = true; 
         recognition.interimResults = true;
 
         const synth = window.speechSynthesis;
         let lastTranscript = "";
         let currentSide = "";
-        let isListening = false;
+        let isActive = false;
 
         function toggleListen(side) {
+            const box = document.getElementById(side + '-display-box');
             const display = document.getElementById(side + '-display');
             const sendBtn = document.getElementById(side + '-send');
 
-            if (isListening) {
+            if (isActive) {
                 recognition.stop();
-                isListening = false;
-                display.classList.remove('listening');
-                if (display.innerText === "..." || display.innerText === "LISTENING") {
-                    display.innerText = (side === 'top') ? "TAP" : "แตะ";
-                }
+                isActive = false;
+                box.classList.remove('listening');
+                if(display.innerText === "...") display.innerText = (side === 'top' ? "TAP" : "แตะ");
                 return;
             }
 
             currentSide = side;
-            const lang = document.getElementById(side + '-lang').value;
-            recognition.lang = lang;
+            recognition.lang = document.getElementById(side + '-lang').value;
             
             try { 
                 synth.cancel();
                 recognition.start(); 
-                isListening = true;
-                display.innerText = (side === 'top') ? "LISTENING" : "กำลังฟัง";
-                display.classList.add('listening');
+                isActive = true;
+                box.classList.add('listening');
+                display.innerText = "...";
                 sendBtn.style.display = "none";
-            } catch(e) { console.log(e); }
+            } catch(e) {}
         }
 
         recognition.onresult = (event) => {
             const display = document.getElementById(currentSide + '-display');
             const sendBtn = document.getElementById(currentSide + '-send');
             let interim = "";
-            
             for (let i = event.resultIndex; i < event.results.length; ++i) {
+                let text = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    lastTranscript = event.results[i][0].transcript;
-                    display.innerText = lastTranscript;
+                    lastTranscript = text;
+                    display.innerText = text;
                     sendBtn.style.display = "block";
                 } else {
-                    interim += event.results[i][0].transcript;
+                    interim = text;
                     display.innerText = interim;
                 }
             }
         };
 
         async function translateAndSend(side) {
-            if (isListening) toggleListen(side); // หยุดไมค์ก่อนแปล
+            if (isActive) toggleListen(side);
 
             const isTop = side === 'top';
             const otherSide = isTop ? 'bottom' : 'top';
@@ -145,8 +149,8 @@
             const sendBtn = document.getElementById(side + '-send');
             const displayOther = document.getElementById(otherSide + '-display');
 
-            sendBtn.style.display = "none";
             const textToTranslate = displayMe.innerText;
+            sendBtn.style.display = "none";
             displayMe.innerText = "WAIT";
 
             const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${toLang}&dt=t&q=${encodeURI(textToTranslate)}`;
@@ -160,13 +164,10 @@
                 displayMe.innerText = "OK";
                 
                 synth.cancel();
-                setTimeout(() => {
-                    const utter = new SpeechSynthesisUtterance(translated);
-                    utter.lang = toLangFull;
-                    utter.rate = 0.85; // จังหวะเสถียรสำหรับคนแก่ Snowbirds
-                    utter.pitch = 1.0;
-                    synth.speak(utter);
-                }, 100);
+                const utter = new SpeechSynthesisUtterance(translated);
+                utter.lang = toLangFull;
+                utter.rate = 0.8; // หน่วงให้ช้าและเสถียรตามสั่งสัด!
+                synth.speak(utter);
             } catch (e) { displayMe.innerText = "ERR"; }
         }
     </script>
