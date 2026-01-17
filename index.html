@@ -3,43 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Eternal Universal - พารวีร์</title>
+    <title>Universal Desk Full - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        body, html { background: #000; height: 100vh; width: 100vw; overflow: hidden; position: fixed; font-family: sans-serif; color: #fff; }
+        body, html { 
+            background: #000; height: 100vh; width: 100vw; 
+            overflow: hidden; position: fixed; font-family: sans-serif; color: #fff; 
+            display: flex; flex-direction: column;
+        }
+        
         .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; min-height: 0; }
         .top { transform: rotate(180deg); }
-        .lang-select { position: absolute; top: 10px; left: 10px; background: rgba(20,20,20,0.95); color: #fff; border: 1px solid #444; font-size: 11px; z-index: 100; border-radius: 4px; padding: 2px; }
-        
+
+        /* ส่วนเลือกภาษา */
+        .lang-select { 
+            position: absolute; top: 10px; left: 10px; 
+            background: rgba(30,30,30,0.95); color: #fff; 
+            border: 1px solid #444; font-size: 11px; z-index: 100; 
+            border-radius: 4px; padding: 2px; 
+        }
+
+        /* พื้นที่หลักสำหรับการโต้ตอบ */
         .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 10px; }
-        .mic-btn { width: 25vw; height: 25vw; max-width: 110px; max-height: 110px; background: #111; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; transition: 0.3s; z-index: 5; }
+        .mic-btn { 
+            width: 25vw; height: 25vw; max-width: 110px; max-height: 110px; 
+            background: #111; border: 2px solid #333; border-radius: 50%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: #888; transition: 0.3s; z-index: 5; 
+        }
+        .mic-btn i { font-size: 35px; }
         .display-box { font-size: 8vw; font-weight: 900; line-height: 1.1; display: none; padding: 15px; text-align: center; width: 100%; word-break: break-word; }
-        
-        /* แป้นพิมพ์เจ้าของภาษา (ซ่อน/แสดง) */
-        .kb-container { position: absolute; bottom: -100%; width: 100%; height: 100%; background: #000; transition: 0.3s ease-out; display: flex; flex-direction: column; padding: 10px; z-index: 10; }
+
+        /* แป้นพิมพ์เจ้าของภาษา (ซ่อนอยู่ใน Stage) */
+        .kb-container { 
+            position: absolute; bottom: -100%; width: 100%; height: 100%; 
+            background: #000; transition: 0.3s ease-out; 
+            display: flex; flex-direction: column; padding: 10px; z-index: 10; 
+        }
         .kb-container.active { bottom: 0; }
         .kb-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; flex: 1; overflow-y: auto; padding-bottom: 5px; }
-        .key { background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; height: 38px; cursor: pointer; color: #ccc; }
+        .key { 
+            background: #222; border-radius: 4px; display: flex; 
+            align-items: center; justify-content: center; 
+            font-size: 14px; height: 38px; cursor: pointer; color: #ccc; 
+        }
         .key:active { background: #555; color: #fff; }
         .key.special { background: #333; grid-column: span 2; font-size: 10px; font-weight: bold; }
 
-        /* Buffer Area (โต๊ะสนทนา) */
-        .buffer-row { height: 10vh; background: #0a0a0a; border-top: 1px solid #1a1a1a; display: flex; align-items: center; gap: 10px; padding: 0 15px; flex-shrink: 0; }
+        /* Buffer Area (โต๊ะสนทนาด้านล่างของแต่ละฝั่ง) */
+        .buffer-row { 
+            height: 10vh; background: #0a0a0a; border-top: 1px solid #1a1a1a; 
+            display: flex; align-items: center; gap: 10px; padding: 0 15px; flex-shrink: 0; 
+        }
         .kb-toggle { font-size: 24px; cursor: pointer; color: #444; transition: 0.2s; }
         .kb-toggle.active { color: #0f0; }
-        .buffer-box { flex: 1; background: #000; border: 1px solid #222; border-radius: 8px; padding: 10px; font-size: 16px; color: #0f0; height: 45px; overflow-x: auto; white-space: nowrap; display: flex; align-items: center; }
-        .send-btn { width: 45px; height: 45px; background: #fff; border-radius: 50%; border: none; font-size: 22px; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .buffer-box { 
+            flex: 1; background: #000; border: 1px solid #222; border-radius: 8px; 
+            padding: 10px; font-size: 16px; color: #0f0; height: 45px; 
+            overflow-x: auto; white-space: nowrap; display: flex; align-items: center; 
+        }
+        .send-btn { 
+            width: 45px; height: 45px; background: #fff; border-radius: 50%; 
+            border: none; font-size: 22px; color: #000; 
+            display: flex; align-items: center; justify-content: center; font-weight: bold; 
+        }
 
+        /* สถานะต่างๆ */
         .listening .mic-btn { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
         .has-msg .mic-btn, .has-msg .kb-container, .has-msg .kb-toggle { display: none !important; }
         .has-msg .display-box { display: block; }
-        footer { height: 2vh; background: #000; font-size: 8px; color: #222; text-align: center; flex-shrink: 0; }
+
+        footer { height: 2.5vh; background: #000; font-size: 9px; color: #222; text-align: center; border-top: 1px solid #111; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .beer-link { color: #333; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <script>
-        // คลังภาษานิรันดร์ (Universal Native Array)
+        // คลังภาษานิรันดร์แบบ Full Native [cite: 2026-01-17]
         const globalLangs = {
             'th-TH': { n:'🇹🇭 TH', k:"กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮะาิีึืุูเแโใไ'.ๆ".split("") },
             'en-US': { n:'🇺🇸 EN', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") },
@@ -47,7 +88,146 @@
             'sv-SE': { n:'🇸🇪 SE', k:"QWERTYUIOPÅASDFGHJKLÖÄZXCVBNM,.?".split("") },
             'de-DE': { n:'🇩🇪 DE', k:"QWERTYUIOPÜASDFGHJKLÖÄZXCVBNMß,.?".split("") },
             'ja-JP': { n:'🇯🇵 JP', k:"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("") },
-            'zh-CN': { n:'🇨🇳 ZH', k:"ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ".split("") },
             'ko-KR': { n:'🇰🇷 KR', k:"ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ".split("") },
+            'zh-CN': { n:'🇨🇳 ZH', k:"ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ".split("") },
             'fr-FR': { n:'🇫🇷 FR', k:"AZERTYUIOPQSDFGHJKLMWXCVBNÉÀÈÇ,.?".split("") },
-            'ru-RU': { n:'🇷🇺 RU', k:"ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТ
+            'it-IT': { n:'🇮🇹 IT', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") },
+            'es-ES': { n:'🇪🇸 ES', k:"QWERTYUIOPÑASDFGHJKLZXCVBNM,.?".split("") },
+            'ru-RU': { n:'🇷🇺 RU', k:"ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,.?".split("") },
+            'vi-VN': { n:'🇻🇳 VI', k:"QWERTYUIOPASDFGHJKLZXCVBNMĐ,.?".split("") },
+            'hi-IN': { n:'🇮🇳 HI', k:"अआइईउऊऋएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह".split("") },
+            'ar-SA': { n:'🇸🇦 AR', k:"أبتثجحخدذرزسشصضطظعغفقكلمنهوي".split("") },
+            'pt-PT': { n:'🇵🇹 PT', k:"QWERTYUIOPASDFGHJKLZXCVBNM,.?".split("") }
+        };
+    </script>
+
+    <div class="half top" id="top-half">
+        <select class="lang-select" id="top-lang" onchange="initKB('top')"></select>
+        <div class="stage" id="top-stage" onclick="clearMsg('top')">
+            <div class="mic-btn" id="top-mic"><i>🎙️</i></div>
+            <div class="display-box" id="top-display"></div>
+            <div class="kb-container" id="top-kb-box">
+                <div class="kb-grid" id="top-kb-grid"></div>
+            </div>
+        </div>
+        <div class="buffer-row">
+            <div class="kb-toggle" id="top-kb-btn" onclick="toggleKB('top')">⌨️</div>
+            <div class="buffer-box" id="top-buffer"></div>
+            <button class="send-btn" onclick="send('top')">➔</button>
+        </div>
+    </div>
+
+    <div class="half bottom" id="bottom-half">
+        <select class="lang-select" id="bottom-lang" onchange="initKB('bottom')"></select>
+        <div class="stage" id="bottom-stage" onclick="clearMsg('bottom')">
+            <div class="mic-btn" id="bottom-mic"><i>🎙️</i></div>
+            <div class="display-box" id="bottom-display"></div>
+            <div class="kb-container" id="bottom-kb-box">
+                <div class="kb-grid" id="bottom-kb-grid"></div>
+            </div>
+        </div>
+        <div class="buffer-row">
+            <div class="kb-toggle" id="bottom-kb-btn" onclick="toggleKB('bottom')">⌨️</div>
+            <div class="buffer-box" id="bottom-buffer"></div>
+            <button class="send-btn" onclick="send('bottom')">➔</button>
+        </div>
+    </div>
+
+    <footer><a href="https://github.com/sponsors/parawee66" class="beer-link">DONATE FOR BEER 🍺</a></footer>
+
+    <script>
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true; recognition.interimResults = true;
+        const synth = window.speechSynthesis;
+        let activeSide = null;
+
+        // ล็อคระบบการสร้างแป้นพิมพ์เจ้าของภาษา
+        function initKB(side) {
+            const select = document.getElementById(side + '-lang');
+            if (select.innerHTML === "") {
+                select.innerHTML = Object.keys(globalLangs).map(k => `<option value="${k}">${globalLangs[k].n}</option>`).join('');
+            }
+            const data = globalLangs[select.value];
+            const grid = document.getElementById(side + '-kb-grid');
+            grid.innerHTML = data.k.map(c => `<div class="key" onclick="addChar('${side}','${c}')">${c}</div>`).join('');
+            grid.innerHTML += `<div class="key special" onclick="addChar('${side}',' ')">SPACE</div>`;
+            grid.innerHTML += `<div class="key special" onclick="delChar('${side}')">DEL</div>`;
+            grid.innerHTML += `<div class="key special" onclick="toggleKB('${side}')">DONE</div>`;
+        }
+
+        // การสลับเปิดปิดคีย์บอร์ดล่องหน
+        function toggleKB(side) {
+            document.getElementById(side + '-kb-box').classList.toggle('active');
+            document.getElementById(side + '-kb-btn').classList.toggle('active');
+        }
+
+        function addChar(side, c) { document.getElementById(side + '-buffer').innerText += c; }
+        function delChar(side) { 
+            const b = document.getElementById(side + '-buffer');
+            b.innerText = b.innerText.slice(0, -1);
+        }
+
+        ['top', 'bottom'].forEach(side => {
+            initKB(side);
+            const btn = document.getElementById(side + '-mic');
+            const onStart = (e) => {
+                if (document.getElementById(side+'-half').classList.contains('has-msg') || 
+                    document.getElementById(side+'-kb-box').classList.contains('active')) return;
+                e.preventDefault(); activeSide = side;
+                recognition.lang = document.getElementById(side + '-lang').value;
+                document.getElementById(side + '-half').classList.add('listening');
+                try { recognition.start(); } catch(err) {}
+            };
+            const onEnd = (e) => { e.preventDefault(); recognition.stop(); document.getElementById(side + '-half').classList.remove('listening'); };
+            
+            btn.addEventListener('touchstart', onStart, {passive: false});
+            btn.addEventListener('touchend', onEnd, {passive: false});
+            btn.addEventListener('mousedown', onStart);
+            btn.addEventListener('mouseup', onEnd);
+        });
+
+        recognition.onresult = (event) => {
+            let res = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) { 
+                if (event.results[i].isFinal) res += event.results[i][0].transcript;
+            }
+            if (activeSide) document.getElementById(activeSide + '-buffer').innerText += res;
+        };
+
+        // ฟังก์ชันส่งและแปลสารข้ามฝั่ง
+        async function send(side) {
+            const buf = document.getElementById(side + '-buffer');
+            const text = buf.innerText.trim();
+            if (!text) return;
+            const other = side === 'top' ? 'bottom' : 'top';
+            const targetLang = document.getElementById(other + '-lang').value;
+            
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
+                const data = await res.json();
+                const result = data[0][0][0];
+                
+                document.getElementById(other + '-display').innerText = result;
+                document.getElementById(other + '-half').classList.add('has-msg');
+                
+                const utter = new SpeechSynthesisUtterance(result);
+                utter.lang = targetLang; utter.rate = 0.85;
+                synth.speak(utter);
+                
+                buf.innerText = "";
+                document.getElementById(side + '-kb-box').classList.remove('active');
+                document.getElementById(side + '-kb-btn').classList.remove('active');
+            } catch (e) { console.error("Error:", e); }
+        }
+
+        // ล้างหน้าจอเพื่อรับสารใหม่
+        function clearMsg(side) {
+            const half = document.getElementById(side + '-half');
+            if (half.classList.contains('has-msg')) {
+                half.classList.remove('has-msg');
+                document.getElementById(side + '-display').innerText = "";
+            }
+        }
+    </script>
+</body>
+</html>
