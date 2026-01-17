@@ -3,61 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pure Symmetric - พารวีร์</title>
+    <title>Central Heart - พารวีร์</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: sans-serif; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; padding: 10px; overflow: hidden; }
+        .half { flex: 1; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; padding: 10px; }
         .top { transform: rotate(180deg); }
+        .lang-select { position: absolute; top: 10px; left: 10px; background: #222; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 8px; z-index: 100; font-size: 0.8rem; }
         
-        /* Display Area: Only for TRANSLATED text from the other side */
-        .display-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .text-output { font-size: calc(1.5rem + 2vw); font-weight: 900; color: #fff; word-break: break-word; line-height: 1.2; }
+        /* Central Mic & Display Area */
+        .center-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .mic-button { width: 120px; height: 120px; background: #1a1a1a; border: 2px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; color: #666; }
+        .mic-button i { font-size: 3rem; margin-bottom: 5px; }
+        .mic-button span { font-size: 0.7rem; font-weight: bold; }
+        .listening .mic-button { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 30px rgba(255,68,68,0.3); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         
-        /* Language Selector: Compact and Clean */
-        .lang-select { position: absolute; top: 10px; right: 10px; background: #222; color: #fff; border: 1px solid #444; padding: 5px 10px; border-radius: 8px; z-index: 100; font-size: 0.9rem; }
+        .message-box { font-size: calc(1.5rem + 3vw); font-weight: 900; color: #fff; text-align: center; word-break: break-word; padding: 20px; display: none; }
+        
+        /* Input Buffer (Bottom of each half) */
+        .buffer-bar { width: 100%; max-width: 500px; display: flex; gap: 8px; align-items: center; background: #111; padding: 10px 15px; border-radius: 30px; border: 1px solid #333; margin-top: 10px; }
+        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.1rem; }
+        .send-btn { background: #fff; color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
 
-        /* Input Bar: Stable and Scaled */
-        .input-bar { position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; gap: 8px; align-items: center; background: #1a1a1a; padding: 8px 15px; border-radius: 35px; border: 1px solid #333; z-index: 200; }
-        .chat-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1.1rem; padding: 8px 0; min-width: 0; }
-        .mic-btn { font-size: 1.8rem; cursor: pointer; color: #666; transition: 0.2s; flex-shrink: 0; }
-        .listening .mic-btn { color: #ff4444; animation: pulse 1s infinite; transform: scale(1.1); }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        
-        .send-btn { background: #fff; color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        
-        .beer-icon { position: fixed; bottom: 5px; left: 5px; text-decoration: none; font-size: 0.8rem; opacity: 0.1; z-index: 1000; color: #fff; }
+        /* Logic States */
+        .has-message .mic-button { display: none; }
+        .has-message .message-box { display: block; }
+        .beer-icon { position: fixed; top: 50%; left: 10px; transform: translateY(-50%); opacity: 0.1; font-size: 0.8rem; color: #fff; text-decoration: none; z-index: 1000; }
     </style>
 </head>
 <body>
 
     <script>
-        const langs = [
-            {v:'th-TH', t:'🇹🇭 TH'}, {v:'en-GB', t:'🇬🇧 EN'}, {v:'no-NO', t:'🇳🇴 NO'}, 
-            {v:'sv-SE', t:'🇸🇪 SV'}, {v:'de-DE', t:'🇩🇪 DE'}, {v:'ja-JP', t:'🇯🇵 JP'}
-        ];
-        const langOpts = langs.map(l => `<option value="${l.v}">${l.t}</option>`).join('');
+        const langOpts = ['th-TH', 'en-GB', 'no-NO', 'sv-SE', 'ja-JP'].map(v => `<option value="${v}">${v.split('-')[1]}</option>`).join('');
     </script>
 
-    <div class="half top">
+    <div class="half top" id="top-half">
         <select class="lang-select" id="top-lang"><script>document.write(langOpts)</script></select>
-        <div class="display-area"><div class="text-output" id="top-display"></div></div>
-        <div class="input-bar" id="top-bar">
-            <input type="text" class="chat-input" id="top-input" placeholder="Type here...">
-            <div class="mic-btn" id="top-mic">🎙️</div>
+        <div class="center-stage" id="top-stage" onclick="resetSide('top')">
+            <div class="mic-button" id="top-mic-btn"><i>🎙️</i><span>HOLD TO TALK</span></div>
+            <div class="message-box" id="top-display"></div>
+        </div>
+        <div class="buffer-bar">
+            <input type="text" class="chat-input" id="top-input" placeholder="Buffer...">
             <button class="send-btn" onclick="process('top')">➔</button>
         </div>
     </div>
 
-    <a href="https://github.com/sponsors/parawee66" target="_blank" class="beer-icon">🍺</a>
+    <a href="#" class="beer-icon">🍺</a>
 
-    <div class="half bottom">
+    <div class="half bottom" id="bottom-half">
         <select class="lang-select" id="bottom-lang"><script>document.write(langOpts)</script></select>
-        <div class="display-area"><div class="text-output" id="bottom-display"></div></div>
-        <div class="input-bar" id="bottom-bar">
-            <input type="text" class="chat-input" id="bottom-input" placeholder="พิมพ์ตรงนี้...">
-            <div class="mic-btn" id="bottom-mic">🎙️</div>
+        <div class="center-stage" id="bottom-stage" onclick="resetSide('bottom')">
+            <div class="mic-button" id="bottom-mic-btn"><i>🎙️</i><span>กดค้างเพื่อพูด</span></div>
+            <div class="message-box" id="bottom-display"></div>
+        </div>
+        <div class="buffer-bar">
+            <input type="text" class="chat-input" id="bottom-input" placeholder="ตรวจสอบข้อความ...">
             <button class="send-btn" onclick="process('bottom')">➔</button>
         </div>
     </div>
@@ -69,25 +71,21 @@
         let activeInput = null;
 
         ['top', 'bottom'].forEach(side => {
-            const mic = document.getElementById(side + '-mic');
-            const bar = document.getElementById(side + '-bar');
+            const btn = document.getElementById(side + '-mic-btn');
+            const half = document.getElementById(side + '-half');
             const input = document.getElementById(side + '-input');
 
-            const start = (e) => { 
-                e.preventDefault();
-                activeInput = input;
+            const start = (e) => {
+                if (half.classList.contains('has-message')) return;
+                e.preventDefault(); activeInput = input;
                 recognition.lang = document.getElementById(side + '-lang').value;
-                bar.classList.add('listening');
-                synth.cancel();
+                half.classList.add('listening'); synth.cancel();
                 try { recognition.start(); } catch(err) {}
             };
-            const end = (e) => { 
-                e.preventDefault();
-                recognition.stop();
-                bar.classList.remove('listening');
-            };
-            mic.addEventListener('mousedown', start); mic.addEventListener('touchstart', start);
-            mic.addEventListener('mouseup', end); mic.addEventListener('touchend', end);
+            const end = (e) => { e.preventDefault(); recognition.stop(); half.classList.remove('listening'); };
+
+            btn.addEventListener('mousedown', start); btn.addEventListener('touchstart', start);
+            btn.addEventListener('mouseup', end); btn.addEventListener('touchend', end);
         });
 
         recognition.onresult = (event) => {
@@ -100,27 +98,31 @@
 
         async function process(side) {
             const input = document.getElementById(side + '-input');
-            const text = input.value;
-            if (!text) return;
-
+            if (!input.value) return;
             const other = side === 'top' ? 'bottom' : 'top';
             const targetLang = document.getElementById(other + '-lang').value;
-            
+
             try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang.split('-')[0]}&dt=t&q=${encodeURI(input.value)}`);
                 const data = await res.json();
                 const result = data[0][0][0];
-                
-                // Show only on the OTHER side's display
+
                 document.getElementById(other + '-display').innerText = result;
+                document.getElementById(other + '-half').classList.add('has-message');
                 
                 const utter = new SpeechSynthesisUtterance(result);
                 utter.lang = targetLang; utter.rate = 0.8;
                 synth.speak(utter);
-                
-                // Clear own buffer after sending
                 input.value = "";
             } catch (e) { console.error(e); }
+        }
+
+        function resetSide(side) {
+            const half = document.getElementById(side + '-half');
+            if (half.classList.contains('has-message')) {
+                half.classList.remove('has-message');
+                document.getElementById(side + '-display').innerText = "";
+            }
         }
     </script>
 </body>
