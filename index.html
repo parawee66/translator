@@ -1,70 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sleek Survivor</title>
+    <title>Mobile Survivor - พารวีร์</title>
     <style>
-        :root { 
-            --bg: #0a0a0a; 
-            --txt: #ffffff; 
-            --accent: #00ff88; 
-            --surface: #161616;
-            --border: rgba(255,255,255,0.08);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body, html { background: var(--bg); height: 100%; width: 100%; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        :root { --bg: #000; --txt: #fff; --accent: #0f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: none; }
+        body, html { background: var(--bg); height: 100%; width: 100%; overflow: hidden; position: fixed; font-family: sans-serif; }
         
-        .half { height: 50%; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid var(--border); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg); }
+        .half { height: 50%; display: flex; flex-direction: column; position: relative; border-bottom: 1px solid #222; transition: 0.4s; background: var(--bg); }
         .top { transform: rotate(180deg); }
+        .half.waiting { opacity: 0.4; filter: grayscale(1); }
 
-        /* ส่วนควบคุมที่ดูสะอาดขึ้น */
-        .controls { position: absolute; top: 16px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; z-index: 100; align-items: center; }
-        select { background: var(--surface); color: var(--txt); border: 1px solid var(--border); font-size: 11px; border-radius: 20px; padding: 6px 12px; appearance: none; text-transform: uppercase; letter-spacing: 1px; }
-        .mute-btn { width: 32px; height: 32px; background: var(--surface); border: 1px solid var(--border); color: #666; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
-        .mute-btn.on { color: #ff4444; border-color: #ff4444; box-shadow: 0 0 10px rgba(255,68,68,0.2); }
+        .controls { position: absolute; top: 12px; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; z-index: 100; }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 12px; border-radius: 4px; padding: 4px; }
+        .mute-btn { background: #222; border: 1px solid #444; color: #666; border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+        .mute-btn.on { color: #f44; border-color: #f44; }
 
-        /* Stage ปรับปรุงการแสดงผล */
-        .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px; }
-        .mic-btn { width: 85px; height: 85px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--accent); transition: 0.3s; cursor: pointer; position: relative; }
-        .mic-btn.listening { border-color: var(--accent); background: #001a10; animation: pulse 2s infinite; }
-        
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,255,136,0.3); } 70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(0,255,136,0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,255,136,0); } }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 15px; }
+        .mic-btn { width: 100px; height: 100px; background: #111; border: 3px solid #333; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; cursor: pointer; }
+        .mic-btn.listening { border-color: var(--accent); color: var(--accent); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,255,0,0.4); } 70% { box-shadow: 0 0 0 20px rgba(0,255,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,255,0,0); } }
 
-        .display-box { font-size: 10vw; font-weight: 700; line-height: 1.1; text-align: center; width: 100%; display: none; color: var(--txt); letter-spacing: -1px; }
+        .display-box { font-size: 8.5vw; font-weight: 900; line-height: 1.2; text-align: center; width: 100%; display: none; padding: 20px; color: var(--txt); word-break: break-word; }
         .has-msg .mic-btn { display: none; }
         .has-msg .display-box { display: block; }
 
-        /* Buffer Row ที่ดู Minimal */
-        .buffer-row { height: 75px; background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; padding: 0 20px; }
-        .buffer-box { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; font-size: 16px; color: var(--accent); outline: none; overflow-x: auto; white-space: nowrap; }
-        .send-btn { width: 48px; height: 48px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #000; border: none; transition: 0.2s; }
-        .send-btn:active { transform: scale(0.9); opacity: 0.8; }
+        .buffer-row { height: 70px; background: #080808; border-top: 1px solid #222; display: flex; align-items: center; gap: 10px; padding: 0 15px; }
+        .buffer-box { flex: 1; background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; font-size: 16px; color: var(--accent); outline: none; overflow-x: auto; white-space: nowrap; }
+        .send-btn { width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #000; border: none; font-weight: bold; }
 
-        .theme-trigger { position: absolute; bottom: 85px; left: 20px; width: 20px; height: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; z-index: 10; opacity: 0.3; }
+        .theme-trigger { position: absolute; bottom: 80px; left: 15px; width: 15px; height: 15px; background: #111; border-radius: 50%; z-index: 10; opacity: 0.2; }
     </style>
 </head>
 <body onload="init()">
+
     <div class="half top" id="top-half">
         <div class="controls">
             <select id="top-lang"></select>
-            <div class="mute-btn" id="top-mute" onclick="toggleMute('top')">Vol</div>
+            <div class="mute-btn" id="top-mute" onclick="toggleMute('top')">🔊</div>
         </div>
         <div class="stage" onclick="clearMsg('top')">
             <div class="mic-btn" id="top-mic" onclick="startVoice('top')">🎙️</div>
             <div class="display-box" id="top-display" onclick="replay('top')"></div>
         </div>
         <div class="buffer-row">
-            <div class="buffer-box" id="top-buffer" contenteditable="true" placeholder="..."></div>
-            <button class="send-btn" onclick="send('top')">↑</button>
+            <div class="buffer-box" id="top-buffer" contenteditable="true"></div>
+            <button class="send-btn" onclick="send('top')">➔</button>
         </div>
     </div>
 
     <div class="half bottom" id="bottom-half">
         <div class="controls">
             <select id="bottom-lang"></select>
-            <div class="mute-btn" id="bottom-mute" onclick="toggleMute('bottom')">Vol</div>
+            <div class="mute-btn" id="bottom-mute" onclick="toggleMute('bottom')">🔊</div>
         </div>
         <div class="stage" onclick="clearMsg('bottom')">
             <div class="mic-btn" id="bottom-mic" onclick="startVoice('bottom')">🎙️</div>
@@ -72,10 +62,98 @@
         </div>
         <div class="theme-trigger" onclick="cycleTheme()"></div>
         <div class="buffer-row">
-            <div class="buffer-box" id="bottom-buffer" contenteditable="true" placeholder="..."></div>
-            <button class="send-btn" onclick="send('bottom')">↑</button>
+            <div class="buffer-box" id="bottom-buffer" contenteditable="true"></div>
+            <button class="send-btn" onclick="send('bottom')">➔</button>
         </div>
     </div>
-    <script> /* คัดลอก Script เดิมมาใส่ที่นี่ */ </script>
+
+    <script>
+        const langs = {"th-TH":"🇹🇭 TH","en-US":"🇺🇸 EN","no-NO":"🇳🇴 NO","sv-SE":"🇸🇪 SE","de-DE":"🇩🇪 DE","ja-JP":"🇯🇵 JP","fr-FR":"🇫🇷 FR","zh-CN":"🇨🇳 ZH"};
+        let themes = [{bg:'#000',txt:'#fff',acc:'#0f0'}, {bg:'#f4ecd8',txt:'#432',acc:'#8b4'}];
+        let currentTheme = 0;
+        let muteState = {top:false, bottom:false};
+        let lastResult = {top: "", bottom: ""};
+
+        // ปลุกระบบเสียงให้ตื่นบนมือถือ [cite: 2026-01-17]
+        const synth = window.speechSynthesis;
+        function unlockAudio() {
+            const u = new SpeechSynthesisUtterance("");
+            synth.speak(u);
+        }
+
+        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        function init() {
+            ['top', 'bottom'].forEach(s => {
+                const sel = document.getElementById(s + '-lang');
+                Object.keys(langs).forEach(k => sel.add(new Option(langs[k], k)));
+                sel.value = (s === 'top') ? 'en-US' : 'th-TH';
+            });
+            document.body.addEventListener('touchstart', unlockAudio, {once: true});
+        }
+
+        let activeSide = null;
+        function startVoice(side) {
+            unlockAudio(); // กระตุ้นเสียงทุกครั้งที่จิ้ม [cite: 2025-12-31]
+            activeSide = side;
+            document.getElementById(side + '-mic').classList.add('listening');
+            recognition.lang = document.getElementById(side + '-lang').value;
+            try { recognition.start(); } catch(e) {}
+        }
+
+        recognition.onresult = (e) => {
+            let t = ""; for (let i = e.resultIndex; i < e.results.length; ++i) t += e.results[i][0].transcript;
+            if (activeSide) document.getElementById(activeSide + '-buffer').innerText = t;
+        };
+
+        recognition.onend = () => {
+            if (activeSide) document.getElementById(activeSide + '-mic').classList.remove('listening');
+            activeSide = null;
+        };
+
+        async function send(side) {
+            const text = document.getElementById(side + '-buffer').innerText.trim();
+            if (!text) return;
+            const other = (side === 'top') ? 'bottom' : 'top';
+            const target = document.getElementById(other + '-lang').value;
+            
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
+                const data = await res.json();
+                const result = data[0][0][0];
+                
+                lastResult[other] = result;
+                const box = document.getElementById(other + '-display');
+                box.innerText = result;
+                document.getElementById(other + '-half').classList.add('has-msg');
+                document.getElementById(side + '-buffer').innerText = "";
+                
+                if (!muteState[other]) {
+                    const u = new SpeechSynthesisUtterance(result);
+                    u.lang = target; u.rate = 0.9; synth.speak(u);
+                }
+            } catch (e) {}
+        }
+
+        function replay(side) {
+            if (lastResult[side]) {
+                const u = new SpeechSynthesisUtterance(lastResult[side]);
+                u.lang = document.getElementById(side + '-lang').value;
+                synth.speak(u);
+            }
+        }
+
+        function toggleMute(s) { muteState[s] = !muteState[s]; document.getElementById(s+'-mute').classList.toggle('on'); }
+        function clearMsg(s) { document.getElementById(s + '-half').classList.remove('has-msg'); synth.cancel(); }
+        function cycleTheme() {
+            currentTheme = (currentTheme + 1) % themes.length;
+            const t = themes[currentTheme];
+            document.documentElement.style.setProperty('--bg', t.bg);
+            document.documentElement.style.setProperty('--txt', t.txt);
+            document.documentElement.style.setProperty('--accent', t.acc);
+        }
+    </script>
 </body>
 </html>
