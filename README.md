@@ -1,119 +1,140 @@
-# Translator — quick ping‑pong phrase translator for travelers
+# Translator — Quick Ping‑Pong Phrase Translator for Travelers
 
-[Live demo](https://parawee66.github.io/translator/) · แบบหน้าเดียว (single‑page HTML) · ไม่มีการเก็บข้อมูล (privacy‑first)
+[Live demo](https://parawee66.github.io/translator/) · Single‑page static HTML · Privacy‑first (no data collection)
 
-Short description: เว็บแอพแปลประโยคสไตล์ phrasebook สำหรับนักท่องเที่ยว — สนทนาแบบสั้น ๆ (ping‑pong) เพื่อใช้ในสนามบิน ร้านอาหาร และการเดินทางทั่วไป
+Short description
+A lightweight phrasebook‑style translator optimized for fast, back‑and‑forth conversational exchanges (ping‑pong style) for travelers — airports, restaurants, directions, and emergencies. Client‑side only; no server storage by default.
 
 ---
 
-## Who this is for / กลุ่มเป้าหมาย
-- นักท่องเที่ยวที่ต้องการสื่อสารแบบสั้น กระชับ และรวดเร็ว
-- ผู้ใช้มือถือที่ต้องการประโยคสำเร็จรูปแทนการพิมพ์ยาว ๆ
-- คนที่กังวลเรื่องความเป็นส่วนตัว — แอพนี้ทำงานทั้งหมดในเบราว์เซอร์ ไม่มีการส่งหรือเก็บข้อความไปยังเซิร์ฟเวอร์
-- ผู้ที่ต้องการตัวอย่างประโยคในสถานการณ์จริง: สนามบิน, โรงแรม, ร้านอาหาร, ขอยา/ความช่วยเหลือฉุกเฉิน
+## Table of contents
+- About
+- Target audience
+- Key features
+- Privacy & data handling
+- Quick examples
+- Run locally
+- Project structure
+- Phrase pack format
+- Contribution
+- Deployment (GitHub Pages)
+- Accessibility
+- Troubleshooting
+- Roadmap ideas
+- License
+- Contact
+- Short Thai summary
 
-## Core features / คุณสมบัติหลัก
-- สนทนาแบบ ping‑pong: พิมพ์/เลือกประโยคแล้วจะตอบกลับทันทีในรูปแบบคู่สนทนา
-- Single static HTML: ทำงานฝั่งลูกค้า (client‑side) เท่านั้น — ไม่มี backend ไม่มีฐานข้อมูล
-- ความเป็นส่วนตัวสูง: ข้อความและประวัติการพูดคุยไม่ถูกส่งออกหรือเก็บบนเซิร์ฟเวอร์ (ดูรายละเอียดด้านล่าง)
-- เบาและเร็ว: เหมาะสำหรับการใช้งานบนมือถือและเครือข่ายช้า
-- ง่ายต่อการ fork และปรับแต่ง phrase packs
+## About
+This repository hosts a single‑page web app (index.html) that simulates short conversational translation suitable for casual travelers. All logic runs in the browser (client‑side); there is no server backend or persistent storage unless you add one intentionally.
 
-## Demo / ตัวอย่างการใช้งาน (quick examples)
-- Airport: "Where is the check‑in counter?" → คำแนะนำประโยคสำเร็จรูป
-- Restaurant: "Can I have the bill, please?"
+## Target audience
+- Casual travelers who need short, actionable phrases rather than long-form translation.
+- Mobile users who prefer tap‑to‑send phrases.
+- Privacy‑conscious users — the app does not send or store conversations externally by default.
+- Contributors who want to add curated phrase packs for languages, countries, or specific situations.
+
+## Key features
+- Ping‑pong style chat UI for quick send/receive flows.
+- Single static HTML deployment — no backend required.
+- Privacy‑first: no telemetry, analytics, or server‑side logging by default.
+- Lightweight and responsive — optimized for mobile and low bandwidth.
+- Easy to extend with curated phrase packs (JSON recommended).
+
+## Privacy & data handling
+- No conversation data is sent to the project’s servers by default.
+- Conversation history exists only in the current page session (in memory). Refreshing or closing the page clears the history.
+- If you integrate third‑party analytics, cloud storage, or remote APIs later, document them clearly, ask for consent, and provide opt‑out instructions.
+
+## Quick examples
+- Airport: "Where is the check‑in counter?"
+- Restaurant: "Is this vegetarian?" / "Can I have the bill, please?"
 - Directions: "How do I get to the train station?"
-- Emergency: "I need a doctor" / "Call the police"
+- Emergency: "I need a doctor" / "Please call the police"
 
-ตัวอย่างที่ใช้บ่อย:
-- ภาษาอังกฤษ → ไทย (หรือสลับทิศทางตามที่มี)
-- ปุ่มเลือกประโยค (preset) เพื่อใช้งานเร็ว
+## Run locally
+1. Clone the repo:
+   git clone https://github.com/parawee66/translator.git
+   cd translator
+2. Open `index.html` directly in a browser or run a static server:
+   - Python 3: `python -m http.server 8000` → http://localhost:8000/
+   - VS Code: use Live Server
+3. The app is static — no build step required unless you introduce a bundler.
 
-## Privacy & Data handling / นโยบายความเป็นส่วนตัว (สรุป)
-- ไม่มีการส่งข้อความไปยังเซิร์ฟเวอร์ของโปรเจคนี้
-- ประวัติการสนทนาอยู่ในหน่วยความจำของเบราว์เซอร์เท่านั้น (หากหน้ารีเฟรช ข้อมูลอาจหาย — ไม่มี persistent storage)
-- ไม่มีการเก็บ log ผู้ใช้หรือการวิเคราะห์ (ถ้าต้องการเพิ่ม analytics ให้ระบุชัดเจนใน README และใน code)
+## Project structure (example)
+- index.html — UI and client logic
+- assets/ — icons, images, demo GIFs
+- js/phrases.json — optional phrase packs (JSON)
+- README.md — this file
 
-## How to run locally / รันบนเครื่องของคุณ
-1. คลอน repo:
-   - git clone https://github.com/parawee66/translator.git
-2. เปิดไฟล์ `index.html` โดยตรงด้วยเบราว์เซอร์ หรือเสิร์ฟแบบง่าย:
-   - Python 3: `python -m http.server 8000` แล้วเปิด `http://localhost:8000/`
-   - หรือใช้ Live Server ใน VS Code
-3. หน้าเว็บเป็นไฟล์ statics ทั้งหมด (HTML/CSS/JS) — ไม่ต้องติดตั้ง backend
+Adjust based on your repo layout.
 
-## Project structure (ตัวอย่าง)
-- index.html — หน้าเดียว (UI + logic)
-- assets/ — รูปภาพ, ไอคอน, GIF ตัวอย่าง
-- js/phrases.json — (ถ้ามี) คลังประโยคแบบ JSON
-- README.md — ไฟล์นี้
+## Phrase pack format (recommended)
+Store curated phrases in JSON for maintainability and community contributions.
 
-(ปรับโครงสร้างตาม repository จริงของคุณ)
-
-## How to customize phrases / เพิ่มชุดประโยค (example)
-ถ้าประโยคเก็บใน JSON ตัวอย่างโครงสร้าง:
+Example:
 [
   {
     "id": "airport_01",
     "source": "Where is the check-in counter?",
     "target": "เคาน์เตอร์เช็คอินอยู่ที่ไหน",
-    "tags": ["airport", "travel"]
+    "tags": ["airport", "travel", "practical"],
+    "language": "th"
   },
   {
     "id": "restaurant_01",
     "source": "Can I have the bill, please?",
     "target": "ขอบิลทีครับ/ค่ะ",
-    "tags": ["restaurant", "payment"]
+    "tags": ["restaurant", "payment"],
+    "language": "th"
   }
 ]
-- เพิ่มไฟล์ phrase pack ใหม่หรือแก้ `js/phrases.json` แล้วรีเฟรชหน้าเว็บ
+Guidelines:
+- Keep phrases short and culturally appropriate.
+- Use tags for categories (airport, restaurant, emergency, directions).
+- Include a language code and optional tone/context notes.
 
-## Contribution / การร่วมพัฒนา
-- หากต้องการเพิ่มภาษา ชุดประโยค หรือ UI improvements โปรดเปิด Issue หรือ PR
-- แนะนำ labels ที่ใช้: `feature:phrasepack`, `bug`, `enhancement`, `i18n`
-- Contribution flow:
-  1. Fork repo
-  2. สร้าง branch ใหม่ (เช่น `add-th-phrases`)
-  3. แก้ไข/เพิ่มไฟล์
-  4. เปิด Pull Request พร้อมคำอธิบาย use case ของชุดประโยคใหม่
+## Contribution
+Contributions welcome — phrase packs, UI improvements, accessibility fixes.
 
-ถ้าต้องการ ฉันช่วยเขียน issue templates / labels ให้ได้
+Suggested labels: `feature:phrasepack`, `i18n`, `bug`, `enhancement`.
+
+Recommended workflow:
+1. Fork the repo
+2. Create a branch (e.g., `add-th-phrases`)
+3. Add or update phrase JSON or UI changes
+4. Open a Pull Request describing the use case and verification steps
+
+If you want, I can add issue templates and label configuration to `.github/`.
 
 ## Deployment (GitHub Pages)
-- ถ้าใช้ branch `main` ให้ไฟล์อยู่ที่ root หรือ `docs/` แล้วตั้งค่า GitHub Pages เป็น source
-- ตัวอย่างการ deploy แบบง่าย:
-  - Push โค้ดไปยัง `main` → Settings → Pages → เลือก branch `main` และ root
-- Live demo ของโปรเจคนี้: https://parawee66.github.io/translator/
+- To publish: place static files in the repository root or `docs/` and set Pages source to the `main` branch (root or `docs/`) under Settings → Pages.
+- Demo: https://parawee66.github.io/translator/
 
-## Accessibility & Mobile tips
-- ทำให้ปุ่มใหญ่พอแตะได้ (touch targets)
-- ใช้ contrast ที่ชัดเจนสำหรับข้อความสำคัญ
-- ให้รองรับการใช้คีย์บอร์ดและ screen readers หากต้องการเข้าถึงกลุ่มผู้สูงอายุหรือผู้ที่ต้องการ accessibility
+## Accessibility & mobile tips
+- Make buttons large enough for touch targets.
+- Ensure sufficient color contrast.
+- Provide ARIA labels for interactive elements and support keyboard navigation.
 
-## Troubleshooting / ปัญหาที่พบบ่อย
-- หน้าไม่โหลด / 404 → ตรวจสอบว่าไฟล์อยู่ใน branch ที่เป็น source ของ GitHub Pages
-- เสียง/Voice input ไม่ทำงาน → ต้องใช้ HTTPS และอนุญาตไมโครโฟนในเบราว์เซอร์
-- การแปลไม่แม่น → เพิ่มประโยคเฉพาะสถานการณ์ (phrase pack) แทน reliance กับโมเดลทั่วไป
+## Troubleshooting
+- 404 on Pages: verify files are on the branch selected for Pages.
+- Voice input/TTS requires HTTPS and microphone permissions.
+- If translations feel off: prefer curated phrase packs over generic machine output.
 
-## Roadmap ideas (ไอเดียพัฒนา)
-- เพิ่ม voice input / TTS (option)
-- เพิ่ม offline JSON phrase packs สำหรับดาวน์โหลด
-- เพิ่มฟังก์ชันหมวดหมู่ (airport, food, emergency) และปุ่ม favorite
-- เพิ่มระบบ community contributed phrase packs (ผ่าน PR)
+## Roadmap ideas
+- Optional voice input and TTS (user opt‑in).
+- Downloadable offline phrase packs.
+- Categories, favorites, and quick access shortcuts.
+- Community‑contributed phrase packs via PRs.
+- A small admin UI to preview and test phrase packs offline.
 
-## License / ใบอนุญาต
-- ใส่ license ที่ต้องการ เช่น MIT (เปลี่ยนได้ตามต้องการ)
-- ตัวอย่าง: `LICENSE` — MIT License
+## License
+Add a license file (e.g., MIT) if you want permissive reuse. This repo currently has no license file — add LICENSE to clarify permissions.
 
-## Contact / ติดต่อ
-- เจ้าของ: parawee66 (GitHub) — https://github.com/parawee66
-- เปิด issue หรือ PR ใน repo เพื่อเสนอชุดประโยคหรือรายงานบั๊ก
+## Contact
+Owner: parawee66 — https://github.com/parawee66
 
 ---
 
-ขอบคุณที่แชร์โปรเจค! ถ้าต้องการ ฉันช่วย:
-- สร้างไฟล์ README.md นี้ใน repo ให้ (push/create PR)
-- สร้าง issue templates, labels, หรือตัวอย่าง phrase JSON
-- เขียน README เวอร์ชันภาษาอังกฤษเพิ่มเติม
-
-บอกฉันว่าต้องการให้ฉันทำขั้นตอนไหนต่อ (เช่น "สร้าง README ใน repo" หรือ "ส่ง README ให้เป็นไฟล์เท่านั้น") — ฉันจะทำให้ตามนั้นทันที
+Short Thai summary
+โปรเจคนี้เป็นเว็บแอพหน้าเดียวสำหรับนักท่องเที่ยวที่เน้นประโยคสั้น ๆ เพื่อสื่อสารอย่างรวดเร็วและเป็นส่วนตัว — ทำงานฝั่งไคลเอนต์เท่านั้นและโดยค่าเริ่มต้นไม่เก็บข้อมูลบนเซิร์ฟเวอร์
